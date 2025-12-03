@@ -1,3 +1,14 @@
 spring:
   application:
     name: search-service
+  ai:
+    vertex.ai:
+      gemini:
+        project-id: gen-lang-client-0578788537
+        location: us-west1
+      embedding:
+        project-id: gen-lang-client-0578788537
+        location: us-central1
+        text:
+          options:
+            model: gemini-embedding-001
