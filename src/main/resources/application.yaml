@@ -1,4 +1,10 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todaybook
+    username: todaybook
+    password: todaybook1234
+    driver-class-name: org.postgresql.Driver
+
   application:
     name: search-service
   ai:
@@ -12,3 +18,10 @@ spring:
         text:
           options:
             model: gemini-embedding-001
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 3072
+        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+        table-name: p_book_embeddings

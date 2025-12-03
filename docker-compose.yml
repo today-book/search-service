@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17   # Postgres 17 + pgvector extension 포함 이미지
+    container_name: todaybook-postgres
+    environment:
+      - POSTGRES_DB=todaybook
+      - POSTGRES_USER=todaybook
+      - POSTGRES_PASSWORD=todaybook1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - todaybook_pgdata:/var/lib/postgresql/data
+
+volumes:
+  todaybook_pgdata:
