@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 @Configuration
 @EnableConfigurationProperties(EmbeddingProperties.class)
-public class VertexAiEmbeddingConfig {
+public class GeminiEmbeddingConfig {
 
     private final EmbeddingProperties embeddingProperties;
 
