@@ -5,10 +5,10 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+
+import java.util.Optional;
 
 @Data
-@Configuration
 @ConfigurationProperties(prefix = "spring.ai.vertex.ai.embedding")
 public class EmbeddingProperties {
     private String projectId;
@@ -18,7 +18,10 @@ public class EmbeddingProperties {
     private Text text;
 
     public String getModel() {
-        return text.options.model;
+        return Optional.ofNullable(text)
+                .map(Text::getOptions)
+                .map(Options::getModel)
+                .orElseThrow(() -> new IllegalStateException("Embedding configuration is not properly initialized"));
     }
 
     @Data

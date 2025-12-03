@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:postgresql://localhost:5432/todaybook
     username: todaybook
@@ -10,10 +12,10 @@ spring:
   ai:
     vertex.ai:
       gemini:
-        project-id: gen-lang-client-0578788537
+        project-id: ${VERTEX_AI_PROJECT_ID}
         location: us-west1
       embedding:
-        project-id: gen-lang-client-0578788537
+        project-id: ${VERTEX_AI_PROJECT_ID}
         location: us-central1
         text:
           options:
@@ -25,3 +27,11 @@ spring:
         dimensions: 3072
         max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
         table-name: p_book_embeddings
+
+custom:
+  vertex-ai:
+    emotion-analysis:
+      temperature: 0.1
+      max-tokens: 200
+
+
