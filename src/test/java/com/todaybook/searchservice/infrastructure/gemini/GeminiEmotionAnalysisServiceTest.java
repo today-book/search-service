@@ -9,16 +9,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class GeminiEmotionAnalysisServiceTest {
 
-    @Autowired
-    private EmotionAnalysisService emotionAnalysisService;
+  @Autowired private EmotionAnalysisService emotionAnalysisService;
 
-    @Test
-    void result() {
-        String text = "책 추천 \n" +
-                "사람의 성격: 차분한, 엉뚱한 \n" +
-                "부가 요구사항: 추리 소설" ;
-        EmotionResult result = emotionAnalysisService.analyze(text);
-        System.out.println("## Emotion = " + result.emotion());
-        System.out.println("## Query   = " + result.query());
-    }
+  @Test
+  void result() {
+    String text = "책 추천 \n" + "사람의 성격: 차분한, 엉뚱한 \n" + "부가 요구사항: 추리 소설";
+    EmotionResult result = emotionAnalysisService.analyze(text);
+    System.out.println("## Emotion = " + result.emotion());
+    System.out.println("## Query   = " + result.query());
+  }
 }
