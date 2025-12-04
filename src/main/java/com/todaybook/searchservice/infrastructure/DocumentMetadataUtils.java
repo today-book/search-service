@@ -11,10 +11,13 @@ public final class DocumentMetadataUtils {
   private DocumentMetadataUtils() {}
 
   public static UUID parseUUID(String id) {
+    if (id == null || id.isBlank()) {
+      return null;
+    }
     try {
       return UUID.fromString(id);
-    } catch (Exception ex) {
-      return UUID.randomUUID();
+    } catch (IllegalArgumentException ex) {
+      return null;
     }
   }
 
@@ -39,7 +42,6 @@ public final class DocumentMetadataUtils {
     if (value instanceof LocalDateTime ldt) {
       return ldt;
     }
-
-    return LocalDateTime.now();
+    return null;
   }
 }
