@@ -1,13 +1,12 @@
 package com.todaybook.searchservice.domain;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -15,15 +14,15 @@ import java.util.UUID;
 @ToString
 public class BookEmbedding {
 
-    private UUID bookId;
+  private UUID bookId;
 
-    private String title;
+  private String title;
 
-    private List<String> categories;
+  private List<String> categories;
 
-    private String description;
+  private String description;
 
-    private double score;
+  private double score;
 
-    private LocalDateTime createdAt;
+  private LocalDateTime createdAt;
 }

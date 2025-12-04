@@ -13,25 +13,24 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(EmbeddingProperties.class)
 public class GeminiEmbeddingConfig {
 
-    private final EmbeddingProperties embeddingProperties;
+  private final EmbeddingProperties embeddingProperties;
 
-    @Bean
-    public VertexAiEmbeddingConnectionDetails connectionDetails() {
-        return VertexAiEmbeddingConnectionDetails.builder()
-                .projectId(embeddingProperties.getProjectId())
-                .location(embeddingProperties.getLocation())
-                .build();
-    }
+  @Bean
+  public VertexAiEmbeddingConnectionDetails connectionDetails() {
+    return VertexAiEmbeddingConnectionDetails.builder()
+        .projectId(embeddingProperties.getProjectId())
+        .location(embeddingProperties.getLocation())
+        .build();
+  }
 
-    @Bean
-    public VertexAiTextEmbeddingOptions embeddingOptions() {
-        return VertexAiTextEmbeddingOptions.builder()
-                .model(embeddingProperties.getModel())
-                .build();
-    }
+  @Bean
+  public VertexAiTextEmbeddingOptions embeddingOptions() {
+    return VertexAiTextEmbeddingOptions.builder().model(embeddingProperties.getModel()).build();
+  }
 
-    @Bean
-    public VertexAiTextEmbeddingModel embeddingModel(VertexAiEmbeddingConnectionDetails connectionDetails, VertexAiTextEmbeddingOptions options) {
-        return new VertexAiTextEmbeddingModel(connectionDetails, options);
-    }
+  @Bean
+  public VertexAiTextEmbeddingModel embeddingModel(
+      VertexAiEmbeddingConnectionDetails connectionDetails, VertexAiTextEmbeddingOptions options) {
+    return new VertexAiTextEmbeddingModel(connectionDetails, options);
+  }
 }
