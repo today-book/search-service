@@ -35,36 +35,37 @@ repositories {
 ext {
 	set('springAiVersion', "1.1.0")
 }
-
 dependencies {
-	implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
-	implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
-	implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
-	compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // postgress
     runtimeOnly 'org.postgresql:postgresql'
-    // docker-compose
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
-    // vertex-ai-embedding
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // spring-ai
+    implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
     implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
-    // vector-store
     implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 
-    implementation 'org.todaybook:common-mvc:1.0.0'
+    // common-mvc
+    implementation 'org.todaybook:common-mvc:1.0.1'
 
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+
 dependencyManagement {
-	imports {
-		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
-	}
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 tasks.named('test') {
