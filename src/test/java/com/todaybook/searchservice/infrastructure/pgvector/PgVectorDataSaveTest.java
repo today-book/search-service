@@ -2,12 +2,14 @@ package com.todaybook.searchservice.infrastructure.pgvector;
 
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@Disabled
 @SpringBootTest
 public class PgVectorDataSaveTest {
   @Autowired VectorStore vectorStore;

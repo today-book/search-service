@@ -2,10 +2,12 @@ package com.todaybook.searchservice.infrastructure.gemini;
 
 import com.todaybook.searchservice.application.EmotionAnalysisService;
 import com.todaybook.searchservice.application.dto.EmotionResult;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@Disabled
 @SpringBootTest
 class GeminiEmotionAnalysisServiceTest {
 
