@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.8'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'com.todaybook'
@@ -21,9 +22,16 @@ configurations {
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
+    maven {
+        name = "GitHubPublicPackages"
+        url = uri("https://maven.pkg.github.com/today-book/common")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+            password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
-
 ext {
 	set('springAiVersion', "1.1.0")
 }
@@ -47,6 +55,8 @@ dependencies {
     // vector-store
     implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 
+    implementation 'org.todaybook:common-mvc:1.0.0'
+
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 }
@@ -59,4 +69,30 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+
+spotless {
+    java {
+        importOrder(
+                'java|javax|jakarta',
+                'org.springframework',
+                'lombok',
+                '',
+                'org.junit|org.mockito',
+                '\\#',
+                '\\#org.junit'
+        )
+        googleJavaFormat()
+        formatAnnotations()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+
+        target 'src/**/*.java'
+    }
+}
+
+tasks.named("test") {
+    dependsOn(tasks.named("spotlessCheck"))
 }
