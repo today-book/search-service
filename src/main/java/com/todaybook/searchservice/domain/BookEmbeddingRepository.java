@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BookEmbeddingRepository extends JpaRepository<BookEmbedding, UUID> {
 
-  List<BookEmbedding> findBookEmbeddingByIdIn(Collection<UUID> ids);
+  List<BookEmbedding> findAllByIdIn(Collection<UUID> ids);
 }
