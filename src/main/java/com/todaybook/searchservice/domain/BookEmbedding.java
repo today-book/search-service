@@ -1,28 +1,29 @@
 package com.todaybook.searchservice.domain;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.todaybook.searchservice.domain.converter.FloatArrayToVectorConverter;
+import com.todaybook.searchservice.domain.converter.MetadataConverter;
+import com.todaybook.searchservice.domain.vo.Metadata;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import lombok.Getter;
 
-@Data
-@Builder
-@AllArgsConstructor
-@ToString
+@Getter
+@Entity
+@Table(name = "p_book_embeddings")
 public class BookEmbedding {
 
-  private UUID bookId;
+  @Id private UUID id;
 
-  private String title;
+  private String content;
 
-  private List<String> categories;
+  @Convert(converter = MetadataConverter.class)
+  private Metadata metadata;
 
-  private String description;
-
-  private double score;
-
-  private LocalDateTime createdAt;
+  @Convert(converter = FloatArrayToVectorConverter.class)
+  @Column(columnDefinition = "vector(3072)")
+  private float[] embedding;
 }
