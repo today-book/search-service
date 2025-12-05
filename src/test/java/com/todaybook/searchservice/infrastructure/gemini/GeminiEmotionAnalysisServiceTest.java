@@ -1,7 +1,7 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
-import com.todaybook.searchservice.application.EmotionAnalysisService;
-import com.todaybook.searchservice.application.dto.EmotionResult;
+import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
+import com.todaybook.searchservice.application.emotion.EmotionResult;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
