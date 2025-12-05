@@ -1,4 +1,4 @@
-package com.todaybook.searchservice.application.dto;
+package com.todaybook.searchservice.application.rerank.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class BookEmbeddingResponse {
+public class BookSearchResult {
 
   private UUID bookId;
 
