@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.rerank.mapper;
 
-import com.todaybook.searchservice.application.dto.BookEmbeddingResponse;
+import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.domain.BookEmbedding;
 import org.springframework.stereotype.Component;
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class BookEmbeddingResponseMapper {
 
-  public BookEmbeddingResponse toResponse(BookEmbeddingScoreContext context) {
+  public BookSearchResult toResponse(BookEmbeddingScoreContext context) {
     BookEmbedding embedding = context.embedding();
 
-    return BookEmbeddingResponse.builder()
+    return BookSearchResult.builder()
         .bookId(embedding.getId())
         .title(embedding.getMetadata().title())
         .categories(embedding.getMetadata().categories())

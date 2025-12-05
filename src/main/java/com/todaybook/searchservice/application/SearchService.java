@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application;
 
-import com.todaybook.searchservice.application.dto.BookEmbeddingResponse;
+import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
 import com.todaybook.searchservice.application.emotion.EmotionResult;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
@@ -18,7 +18,7 @@ public class SearchService {
   private final VectorSearchService vectorSearchService;
   private final RerankingService rerankingService;
 
-  public List<BookEmbeddingResponse> search(String query, int topN) {
+  public List<BookSearchResult> search(String query, int topN) {
     EmotionResult emotionResult = emotionAnalysisService.analyze(query);
 
     List<ScoredBookId> candidates = vectorSearchService.searchTopN(emotionResult.query(), topN);

@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.rerank.service;
 
-import com.todaybook.searchservice.application.dto.BookEmbeddingResponse;
+import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.calculator.EmotionScoreCalculator;
 import com.todaybook.searchservice.application.rerank.calculator.FinalScoreCalculator;
 import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
@@ -44,7 +44,7 @@ public class RerankingService {
    * @param targetEmotion 사용자가 가진 목표 감정(추천 기준)
    * @return 감정 + 벡터 점수 기반으로 재정렬된 추천 도서 목록
    */
-  public List<BookEmbeddingResponse> rerank(
+  public List<BookSearchResult> rerank(
       List<ScoredBookId> candidates, EmotionType targetEmotion, int limit) {
 
     // 검색 결과를 빠르게 조회하기 위해 Map<BookId, ScoredBookId> 로 변환
