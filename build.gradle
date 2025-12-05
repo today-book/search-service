@@ -95,5 +95,5 @@ spotless {
 }
 
 tasks.named("test") {
-    dependsOn(tasks.named("spotlessCheck"))
+    dependsOn(tasks.named("spotlessApply"))
 }
