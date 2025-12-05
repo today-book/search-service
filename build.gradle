@@ -45,7 +45,6 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
     implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
     implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 
     // common-mvc
     implementation 'org.todaybook:common-mvc:1.0.1'
