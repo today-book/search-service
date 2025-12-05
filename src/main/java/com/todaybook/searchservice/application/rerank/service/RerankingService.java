@@ -52,7 +52,7 @@ public class RerankingService {
 
     // 실제 도서 임베딩 로드
     List<BookEmbedding> embeddings =
-        embeddingRepository.findBookEmbeddingByIdIn(scoredBookIdMap.keySet().stream().toList());
+        embeddingRepository.findAllByIdIn(scoredBookIdMap.keySet().stream().toList());
 
     // 각 도서에 대해 감정 점수 + 최종 점수를 계산하여 정렬 후 Response 로 변환
     return embeddings.stream()
