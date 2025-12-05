@@ -5,15 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.todaybook.searchservice.domain.vo.Metadata;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
 @Converter
-@RequiredArgsConstructor
 public class MetadataConverter implements AttributeConverter<Metadata, String> {
 
-  private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public String convertToDatabaseColumn(Metadata attribute) {

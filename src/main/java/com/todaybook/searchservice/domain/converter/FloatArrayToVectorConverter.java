@@ -22,11 +22,21 @@ public class FloatArrayToVectorConverter implements AttributeConverter<float[], 
 
   @Override
   public float[] convertToEntityAttribute(String dbData) {
-    if (dbData == null || dbData.isBlank()) return null;
+    if (dbData == null || dbData.isBlank()) {
+      return null;
+    }
 
-    String[] parts = dbData.replace("[", "").replace("]", "").split(",");
+    String content = dbData.trim();
+    if (content.startsWith("[") && content.endsWith("]")) {
+      content = content.substring(1, content.length() - 1).trim();
+    }
+
+    if (content.isEmpty()) {
+      return new float[0];
+    }
+
+    String[] parts = content.split(",");
     float[] result = new float[parts.length];
-
     for (int i = 0; i < parts.length; i++) {
       result[i] = Float.parseFloat(parts[i].trim());
     }

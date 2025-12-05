@@ -23,6 +23,6 @@ public class SearchService {
 
     List<ScoredBookId> candidates = vectorSearchService.searchTopN(emotionResult.query(), topN);
 
-    return rerankingService.rerank(candidates, emotionResult.emotion());
+    return rerankingService.rerank(candidates, emotionResult.emotion(), topN);
   }
 }

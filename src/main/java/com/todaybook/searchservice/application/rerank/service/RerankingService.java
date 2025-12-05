@@ -45,7 +45,7 @@ public class RerankingService {
    * @return 감정 + 벡터 점수 기반으로 재정렬된 추천 도서 목록
    */
   public List<BookEmbeddingResponse> rerank(
-      List<ScoredBookId> candidates, EmotionType targetEmotion) {
+      List<ScoredBookId> candidates, EmotionType targetEmotion, int limit) {
 
     // 검색 결과를 빠르게 조회하기 위해 Map<BookId, ScoredBookId> 로 변환
     Map<UUID, ScoredBookId> scoredBookIdMap = toScoredBookIdMap(candidates);
@@ -58,6 +58,7 @@ public class RerankingService {
     return embeddings.stream()
         .map(embedding -> calculateScoreContext(embedding, scoredBookIdMap, targetEmotion))
         .sorted(Comparator.comparing(BookEmbeddingScoreContext::finalScore).reversed())
+        .limit(limit)
         .map(responseMapper::toResponse)
         .toList();
   }
@@ -75,6 +76,9 @@ public class RerankingService {
 
     // 초기 벡터 검색 점수 가져오기
     ScoredBookId scoredBookId = scoredBookIdMap.get(embedding.getId());
+    if (scoredBookId == null) {
+      throw new IllegalStateException("ScoredBookId not found for embedding: " + embedding.getId());
+    }
 
     // 임베딩으로부터 도서의 감정 분류
     EmotionType bookEmotion = emotionClassifier.classify(embedding.getEmbedding());

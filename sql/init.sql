@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS p_book_embeddings
 --     book_id    UUID,
 --     book_title      VARCHAR(255),
 --     categories TEXT[]    DEFAULT '{}',
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE INDEX ON p_book_embeddings USING HNSW (embedding vector_cosine_ops);
