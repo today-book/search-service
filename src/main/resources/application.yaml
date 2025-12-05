@@ -33,5 +33,10 @@ custom:
     emotion-analysis:
       temperature: 0.1
       max-tokens: 200
+    book-reason-generation:
+      temperature: 0.3
+      max-tokens: 300
 
-
+search:
+  vector-top-k: 30
+  rerank-top-n: 10
