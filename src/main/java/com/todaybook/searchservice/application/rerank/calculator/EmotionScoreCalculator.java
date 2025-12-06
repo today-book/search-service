@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.rerank.calculator;
 
-import com.todaybook.searchservice.infrastructure.opensearch.document.EmotionType;
+import com.todaybook.searchservice.application.emotion.EmotionType;
 import org.springframework.stereotype.Component;
 
 /**
