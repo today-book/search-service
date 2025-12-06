@@ -1,0 +1,7 @@
+review:
+  auto: true
+  draft: false
+  branches:
+    target:
+      include:
+        - "*"
