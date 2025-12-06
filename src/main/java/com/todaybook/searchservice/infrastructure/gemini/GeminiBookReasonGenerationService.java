@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
-import com.todaybook.searchservice.application.emotion.EmotionResult;
+import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
 import com.todaybook.searchservice.application.reason.BookReasonResult;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;

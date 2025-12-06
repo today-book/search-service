@@ -1,8 +1,8 @@
 package com.todaybook.searchservice.infrastructure.opensearch;
 
 import com.todaybook.searchservice.application.emotion.EmotionEmbeddingService;
+import com.todaybook.searchservice.application.emotion.EmotionType;
 import com.todaybook.searchservice.application.emotion.dto.EmotionEmbeddingCommand;
-import com.todaybook.searchservice.infrastructure.opensearch.document.EmotionType;
 import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
