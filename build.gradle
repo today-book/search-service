@@ -44,7 +44,6 @@ dependencies {
 
     // opensearch
     implementation 'org.springframework.ai:spring-ai-starter-vector-store-opensearch'
-    implementation 'org.springframework.ai:spring-ai-opensearch-store'
 
     // common-mvc
     implementation 'org.todaybook:common-mvc:1.0.1'
