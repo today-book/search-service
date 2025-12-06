@@ -46,6 +46,9 @@ public class RerankingService {
    */
   public List<BookSearchResult> rerank(
       List<ScoredBookId> candidates, EmotionType targetEmotion, int limit) {
+    if (limit <= 0) {
+      throw new IllegalArgumentException("Limit must be greater than 0, but was: " + limit);
+    }
 
     // 검색 결과를 빠르게 조회하기 위해 Map<BookId, ScoredBookId> 로 변환
     Map<UUID, ScoredBookId> scoredBookIdMap = toScoredBookIdMap(candidates);
