@@ -38,18 +38,16 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    runtimeOnly 'org.postgresql:postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
     // spring-ai
     implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-gemini'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
     implementation 'org.springframework.ai:spring-ai-starter-model-vertex-ai-embedding'
+
+    // opensearch
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-opensearch'
+    implementation 'org.springframework.ai:spring-ai-opensearch-store'
 
     // common-mvc
     implementation 'org.todaybook:common-mvc:1.0.1'
-
-    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

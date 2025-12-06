@@ -1,7 +1,7 @@
 package com.todaybook.searchservice.application.rerank.service;
 
-import com.todaybook.searchservice.domain.EmotionEmbeddingRepository;
-import com.todaybook.searchservice.domain.vo.EmotionType;
+import com.todaybook.searchservice.infrastructure.opensearch.document.EmotionType;
+import com.todaybook.searchservice.infrastructure.opensearch.repository.EmotionEmbeddingRepository;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
