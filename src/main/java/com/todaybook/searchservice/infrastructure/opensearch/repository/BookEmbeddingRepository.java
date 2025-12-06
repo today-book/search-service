@@ -38,7 +38,7 @@ public class BookEmbeddingRepository {
 
     } catch (IOException e) {
       throw new OpenSearchAccessException(
-          "Failed to query emotion embedding documents from OpenSearch.", e);
+          "Failed to query book embedding documents from OpenSearch.", e);
     }
   }
 }

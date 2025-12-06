@@ -1,8 +1,12 @@
 services:
-
   opensearch-node1:
     image: opensearchproject/opensearch:latest
     container_name: opensearch-node1
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       - cluster.name=opensearch-cluster
       - node.name=node-1
@@ -34,7 +38,8 @@ services:
     networks:
       - opensearch-net
     depends_on:
-      - opensearch-node1
+      opensearch-node1:
+        condition: service_healthy
 
 networks:
   opensearch-net:

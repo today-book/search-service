@@ -21,6 +21,8 @@ spring:
         initialize-schema: true
         similarity-function: cosinesimil
         dimensions: 3072
+        read-timeout: 5000
+        connect-timeout: 60000
 
 custom:
   vertex-ai:
