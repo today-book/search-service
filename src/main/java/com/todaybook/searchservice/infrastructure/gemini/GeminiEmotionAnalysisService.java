@@ -1,7 +1,7 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
 import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
-import com.todaybook.searchservice.application.emotion.EmotionResult;
+import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

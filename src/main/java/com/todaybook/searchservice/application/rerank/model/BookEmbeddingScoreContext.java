@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.rerank.model;
 
-import com.todaybook.searchservice.domain.BookEmbedding;
+import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
 
 public record BookEmbeddingScoreContext(
-    BookEmbedding embedding, double vectorScore, double emotionScore, double finalScore) {}
+    BookEmbeddingDocument embedding, double vectorScore, double emotionScore, double finalScore) {}

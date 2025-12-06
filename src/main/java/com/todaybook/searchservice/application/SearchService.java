@@ -4,7 +4,7 @@ import com.todaybook.searchservice.application.config.SearchProperties;
 import com.todaybook.searchservice.application.dto.BookResponse;
 import com.todaybook.searchservice.application.dto.BookResponseMapper;
 import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
-import com.todaybook.searchservice.application.emotion.EmotionResult;
+import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
 import com.todaybook.searchservice.application.reason.BookReasonResult;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;

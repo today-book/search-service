@@ -2,7 +2,7 @@ package com.todaybook.searchservice.application.rerank.mapper;
 
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
-import com.todaybook.searchservice.domain.BookEmbedding;
+import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class BookEmbeddingResponseMapper {
 
   public BookSearchResult toResponse(BookEmbeddingScoreContext context) {
-    BookEmbedding embedding = context.embedding();
+    BookEmbeddingDocument embedding = context.embedding();
 
     return BookSearchResult.builder()
         .bookId(embedding.getId())
