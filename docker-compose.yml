@@ -9,12 +9,14 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
-      - DISABLE_SECURITY_PLUGIN=true        # 🔥 개발용: 보안 플러그인 완전 비활성화
-      - DISABLE_INSTALL_DEMO_CONFIG=true    # 데모 유저/롤 설정도 스킵
+      - DISABLE_SECURITY_PLUGIN=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
     ports:
       - "9200:9200"
       - "9600:9600"
@@ -28,7 +30,7 @@ services:
       - "5601:5601"
     environment:
       - OPENSEARCH_HOSTS=http://opensearch-node1:9200
-      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true  # 🔥 개발용
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
     networks:
       - opensearch-net
     depends_on:
@@ -37,3 +39,6 @@ services:
 networks:
   opensearch-net:
     driver: bridge
+
+volumes:
+  opensearch-data:
