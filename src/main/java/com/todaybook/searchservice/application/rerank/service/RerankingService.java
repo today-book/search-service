@@ -1,5 +1,6 @@
 package com.todaybook.searchservice.application.rerank.service;
 
+import com.todaybook.searchservice.application.emotion.EmotionType;
 import com.todaybook.searchservice.application.rerank.calculator.EmotionScoreCalculator;
 import com.todaybook.searchservice.application.rerank.calculator.FinalScoreCalculator;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
@@ -7,7 +8,6 @@ import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingRespon
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
 import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
-import com.todaybook.searchservice.infrastructure.opensearch.document.EmotionType;
 import com.todaybook.searchservice.infrastructure.opensearch.repository.BookEmbeddingRepository;
 import java.util.Comparator;
 import java.util.List;
