@@ -6,9 +6,9 @@ import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
-import com.todaybook.searchservice.domain.BookEmbedding;
-import com.todaybook.searchservice.domain.BookEmbeddingRepository;
-import com.todaybook.searchservice.domain.vo.EmotionType;
+import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
+import com.todaybook.searchservice.infrastructure.opensearch.document.EmotionType;
+import com.todaybook.searchservice.infrastructure.opensearch.repository.BookEmbeddingRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 public class RerankingService {
 
   private final EmotionClassifier emotionClassifier;
-  private final BookEmbeddingRepository embeddingRepository;
+  private final BookEmbeddingRepository bookEmbeddingRepository;
   private final EmotionScoreCalculator emotionScoreCalculator;
   private final FinalScoreCalculator finalScoreCalculator;
   private final BookEmbeddingResponseMapper responseMapper;
@@ -51,8 +51,8 @@ public class RerankingService {
     Map<UUID, ScoredBookId> scoredBookIdMap = toScoredBookIdMap(candidates);
 
     // 실제 도서 임베딩 로드
-    List<BookEmbedding> embeddings =
-        embeddingRepository.findAllByIdIn(scoredBookIdMap.keySet().stream().toList());
+    List<BookEmbeddingDocument> embeddings =
+        bookEmbeddingRepository.findAllByIds(scoredBookIdMap.keySet().stream().toList());
 
     // 각 도서에 대해 감정 점수 + 최종 점수를 계산하여 정렬 후 Response 로 변환
     return embeddings.stream()
@@ -72,7 +72,9 @@ public class RerankingService {
    * @return BookEmbeddingScoreContext 최종 점수 계산 결과
    */
   private BookEmbeddingScoreContext calculateScoreContext(
-      BookEmbedding embedding, Map<UUID, ScoredBookId> scoredBookIdMap, EmotionType targetEmotion) {
+      BookEmbeddingDocument embedding,
+      Map<UUID, ScoredBookId> scoredBookIdMap,
+      EmotionType targetEmotion) {
 
     // 초기 벡터 검색 점수 가져오기
     ScoredBookId scoredBookId = scoredBookIdMap.get(embedding.getId());

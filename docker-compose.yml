@@ -1,16 +1,39 @@
 services:
-  postgres:
-    image: pgvector/pgvector:pg17   # Postgres 17 + pgvector extension 포함 이미지
-    container_name: todaybook-postgres
-    environment:
-      - POSTGRES_DB=todaybook
-      - POSTGRES_USER=todaybook
-      - POSTGRES_PASSWORD=todaybook1234
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - todaybook_pgdata:/var/lib/postgresql/data
 
-volumes:
-  todaybook_pgdata:
+  opensearch-node1:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=node-1
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
+      - DISABLE_SECURITY_PLUGIN=true        # 🔥 개발용: 보안 플러그인 완전 비활성화
+      - DISABLE_INSTALL_DEMO_CONFIG=true    # 데모 유저/롤 설정도 스킵
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    networks:
+      - opensearch-net
+
+  dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      - OPENSEARCH_HOSTS=http://opensearch-node1:9200
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true  # 🔥 개발용
+    networks:
+      - opensearch-net
+    depends_on:
+      - opensearch-node1
+
+networks:
+  opensearch-net:
+    driver: bridge
