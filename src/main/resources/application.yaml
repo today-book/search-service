@@ -1,12 +1,6 @@
 spring:
   config:
     import: optional:file:.env[.properties]
-  datasource:
-    url: jdbc:postgresql://localhost:5432/todaybook
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
   application:
     name: search-service
   ai:
@@ -21,12 +15,12 @@ spring:
           options:
             model: gemini-embedding-001
     vectorstore:
-      pgvector:
-        index-type: HNSW
-        distance-type: COSINE_DISTANCE
+      opensearch:
+        uris: http://localhost:9200
+        index-name: book-embedding-index
+        initialize-schema: true
+        similarity-function: cosinesimil
         dimensions: 3072
-        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
-        table-name: p_book_embeddings
 
 custom:
   vertex-ai:

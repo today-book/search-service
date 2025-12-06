@@ -1,4 +1,4 @@
-package com.todaybook.searchservice.domain.vo;
+package com.todaybook.searchservice.infrastructure.opensearch.document;
 
 public enum EmotionType {
   JOY,
