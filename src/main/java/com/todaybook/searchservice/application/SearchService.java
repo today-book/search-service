@@ -1,17 +1,20 @@
 package com.todaybook.searchservice.application;
 
+import com.todaybook.searchservice.application.book.BookInfoProvider;
+import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.application.config.SearchProperties;
 import com.todaybook.searchservice.application.dto.BookResponse;
 import com.todaybook.searchservice.application.dto.BookResponseMapper;
 import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
-import com.todaybook.searchservice.application.reason.BookReasonResult;
+import com.todaybook.searchservice.application.reason.BookReasonResults;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
 import com.todaybook.searchservice.application.vector.VectorSearchService;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
@@ -27,7 +30,8 @@ import org.springframework.stereotype.Service;
  *   <li>2) VectorSearchService → 벡터 유사도 기반 Top-N 후보 검색
  *   <li>3) RerankingService → 감정 기반 재랭킹 점수 계산
  *   <li>4) BookReasonGenerationService → LLM 기반 추천 이유 및 적합도 점수 생성
- *   <li>5) BookResponseMapper → 최종 결과 DTO 조립 및 점수 기준 정렬
+ *   <li>4) BookInfoProvider → 책 부가 정보 조회
+ *   <li>6) BookResponseMapper → 최종 결과 DTO 조립 및 점수 기준 정렬
  * </ul>
  *
  * @author 김지원
@@ -42,7 +46,7 @@ public class SearchService {
   private final VectorSearchService vectorSearchService;
   private final RerankingService rerankingService;
   private final BookReasonGenerationService bookReasonGenerationService;
-
+  private final BookInfoProvider bookInfoProvider;
   private final SearchProperties searchProperties;
 
   /**
@@ -65,10 +69,13 @@ public class SearchService {
         rerankCandidates(candidates, emotion, searchProperties.getRerankTopN());
 
     // 4. LLM 기반 추천 이유 및 적합도 점수 생성
-    List<BookReasonResult> bookReasonResults = generateRecommendReason(reranked, emotion);
+    BookReasonResults bookReasonResults = generateRecommendReason(reranked, emotion);
 
-    // 5. 도서 정보 + 추천 이유를 조합하여 최종 응답 DTO 생성
-    return BookResponseMapper.map(reranked, bookReasonResults);
+    // 5. 책 부가 정보 조회
+    List<BookInfo> bookInfos = fetchBookInfos(bookReasonResults.bookIds());
+
+    // 6. 도서 정보 + 추천 이유를 조합하여 최종 응답 DTO 생성
+    return BookResponseMapper.map(bookInfos, bookReasonResults.reasons());
   }
 
   /**
@@ -101,8 +108,18 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 추천 이유 생성 결과 목록
    */
-  private List<BookReasonResult> generateRecommendReason(
+  private BookReasonResults generateRecommendReason(
       List<BookSearchResult> books, EmotionResult emotion) {
     return bookReasonGenerationService.generateReasons(books, emotion);
+  }
+
+  /**
+   * 도서 ID 목록을 기준으로, 각 도서의 부가 정보(BookInfo)를 조회한다.
+   *
+   * @param bookIds 책 id 리스트
+   * @return 책 부가 정보
+   */
+  private List<BookInfo> fetchBookInfos(List<UUID> bookIds) {
+    return bookInfoProvider.getBooksByIds(bookIds);
   }
 }
