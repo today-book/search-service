@@ -58,11 +58,11 @@ public class SearchService {
 
     // 2. 벡터 유사도 기반 후보 Top-N 검색
     List<ScoredBookId> candidates =
-        searchVectorCandidates(emotion.query(), searchProperties.getRerankTopN());
+        searchVectorCandidates(emotion.query(), searchProperties.getVectorTopK());
 
     // 3. 감정 기반 재랭킹 (코사인 점수 + 감정 점수 조합)
     List<BookSearchResult> reranked =
-        rerankCandidates(candidates, emotion, searchProperties.getVectorTopK());
+        rerankCandidates(candidates, emotion, searchProperties.getRerankTopN());
 
     // 4. LLM 기반 추천 이유 및 적합도 점수 생성
     List<BookReasonResult> bookReasonResults = generateRecommendReason(reranked, emotion);
