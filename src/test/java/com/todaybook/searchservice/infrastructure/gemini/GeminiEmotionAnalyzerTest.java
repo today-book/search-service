@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
-import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
+import com.todaybook.searchservice.application.emotion.EmotionAnalyzer;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -9,9 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @Disabled
 @SpringBootTest
-class GeminiEmotionAnalysisServiceTest {
+class GeminiEmotionAnalyzerTest {
 
-  @Autowired private EmotionAnalysisService emotionAnalysisService;
+  @Autowired private EmotionAnalyzer emotionAnalysisService;
 
   @Test
   void result() {

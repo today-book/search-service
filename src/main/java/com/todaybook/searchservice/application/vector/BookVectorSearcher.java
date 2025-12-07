@@ -1,5 +1,5 @@
 package com.todaybook.searchservice.application.vector;
 
-public interface VectorSearchService {
+public interface BookVectorSearcher {
   ScoredBookIds searchTopK(String query, int topK);
 }

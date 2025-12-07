@@ -5,14 +5,14 @@ import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.application.config.SearchProperties;
 import com.todaybook.searchservice.application.dto.BookResponse;
 import com.todaybook.searchservice.application.dto.BookResponseMapper;
-import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
+import com.todaybook.searchservice.application.emotion.EmotionAnalyzer;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerator;
 import com.todaybook.searchservice.application.reason.BookReasons;
 import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
 import com.todaybook.searchservice.application.vector.ScoredBookIds;
-import com.todaybook.searchservice.application.vector.VectorSearchService;
+import com.todaybook.searchservice.application.vector.BookVectorSearcher;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -42,10 +42,10 @@ import org.springframework.stereotype.Service;
 @EnableConfigurationProperties(SearchProperties.class)
 public class SearchService {
 
-  private final EmotionAnalysisService emotionAnalysisService;
-  private final VectorSearchService vectorSearchService;
+  private final EmotionAnalyzer emotionAnalyzer;
+  private final BookVectorSearcher bookVectorSearcher;
   private final RerankingService rerankingService;
-  private final BookReasonGenerator bookReasonGenerationService;
+  private final BookReasonGenerator bookReasonGenerator;
   private final BookInfoProvider bookInfoProvider;
   private final SearchProperties searchProperties;
 
@@ -58,18 +58,18 @@ public class SearchService {
   public List<BookResponse> search(String query) {
 
     // 1. 사용자의 감정 분석 및 벡터 검색용 Query 재작성
-    EmotionResult emotion = emotionAnalysisService.analyze(query);
+    EmotionResult emotion = emotionAnalyzer.analyze(query);
 
     // 2. 벡터 유사도 기반 후보 Top-N 검색
     ScoredBookIds candidates =
-        searchVectorCandidates(emotion.query(), searchProperties.getVectorTopK());
+        searchBookCandidates(emotion.query(), searchProperties.getVectorTopK());
 
     // 3. 감정 기반 재랭킹 (코사인 점수 + 감정 점수 조합)
     RerankedBooks reranked =
-        rerankCandidates(candidates, emotion, searchProperties.getRerankTopN());
+        rerankBookCandidates(candidates, emotion, searchProperties.getRerankTopN());
 
     // 4. LLM 기반 추천 이유 및 적합도 점수 생성
-    BookReasons bookReasons = generateRecommendReason(reranked, emotion);
+    BookReasons bookReasons = generateRecommendReasons(reranked, emotion);
 
     // 5. 책 부가 정보 조회
     List<BookInfo> bookInfos = fetchBookInfos(bookReasons.bookIds());
@@ -85,8 +85,8 @@ public class SearchService {
    * @param topK 가져올 후보 개수
    * @return 벡터 검색 후보 목록
    */
-  private ScoredBookIds searchVectorCandidates(String rewrittenQuery, int topK) {
-    return vectorSearchService.searchTopK(rewrittenQuery, topK);
+  private ScoredBookIds searchBookCandidates(String rewrittenQuery, int topK) {
+    return bookVectorSearcher.searchTopK(rewrittenQuery, topK);
   }
 
   /**
@@ -96,7 +96,7 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 재랭킹된 도서 리스트
    */
-  private RerankedBooks rerankCandidates(
+  private RerankedBooks rerankBookCandidates(
       ScoredBookIds candidates, EmotionResult emotion, int topN) {
     return rerankingService.rerank(candidates, emotion.emotion(), topN);
   }
@@ -108,8 +108,8 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 추천 이유 생성 결과 목록
    */
-  private BookReasons generateRecommendReason(RerankedBooks books, EmotionResult emotion) {
-    return bookReasonGenerationService.generateReasons(books, emotion);
+  private BookReasons generateRecommendReasons(RerankedBooks books, EmotionResult emotion) {
+    return bookReasonGenerator.generateReasons(books, emotion);
   }
 
   /**

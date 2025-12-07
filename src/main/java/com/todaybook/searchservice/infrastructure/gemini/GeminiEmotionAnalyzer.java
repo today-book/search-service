@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
-import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
+import com.todaybook.searchservice.application.emotion.EmotionAnalyzer;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -14,13 +14,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-@EnableConfigurationProperties(EmotionAnalysisProperties.class)
+@EnableConfigurationProperties(EmotionAnalyzerProperties.class)
 @Component
 @RequiredArgsConstructor
-public class GeminiEmotionAnalysisService implements EmotionAnalysisService {
+public class GeminiEmotionAnalyzer implements EmotionAnalyzer {
 
   private final ChatModel chatModel;
-  private final EmotionAnalysisProperties properties;
+  private final EmotionAnalyzerProperties properties;
 
   private ChatClient chatClient;
 
@@ -44,7 +44,7 @@ public class GeminiEmotionAnalysisService implements EmotionAnalysisService {
       throw new IllegalStateException(
           "Failed to load emotion prompt template from classpath:prompts/emotion_prompt.txt", e);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to initialize GeminiEmotionAnalysisService", e);
+      throw new IllegalStateException("Failed to initialize GeminiEmotionAnalyzer", e);
     }
   }
 

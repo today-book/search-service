@@ -2,7 +2,7 @@ package com.todaybook.searchservice.infrastructure.gemini;
 
 import com.todaybook.searchservice.application.vector.ScoredBookId;
 import com.todaybook.searchservice.application.vector.ScoredBookIds;
-import com.todaybook.searchservice.application.vector.VectorSearchService;
+import com.todaybook.searchservice.application.vector.BookVectorSearcher;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GeminiVectorSearchService implements VectorSearchService {
+public class GeminiBookVectorSearcher implements BookVectorSearcher {
 
   private final VectorStore vectorStore;
 

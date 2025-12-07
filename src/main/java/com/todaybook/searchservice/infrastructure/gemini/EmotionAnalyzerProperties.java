@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
 @ConfigurationProperties(prefix = "custom.vertex-ai.emotion-analysis")
-public class EmotionAnalysisProperties {
+public class EmotionAnalyzerProperties {
   private double temperature;
   private int maxTokens;
 }
