@@ -4,7 +4,7 @@ import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import java.util.List;
 
-public interface BookReasonGenerationService {
+public interface BookReasonGenerator {
 
-  BookReasonResults generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery);
+  BookReasons generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery);
 }

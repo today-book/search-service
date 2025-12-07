@@ -1,7 +1,7 @@
 package com.todaybook.searchservice.application.dto;
 
 import com.todaybook.searchservice.application.book.dto.BookInfo;
-import com.todaybook.searchservice.application.reason.BookReasonResult;
+import com.todaybook.searchservice.application.reason.BookReason;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,10 +10,9 @@ import java.util.stream.Collectors;
 
 public class BookResponseMapper {
 
-  /** BookSearchResult + BookReasonResult → BookResponse 변환 */
-  public static List<BookResponse> map(
-      List<BookInfo> bookInfos, List<BookReasonResult> reasonResults) {
-    Map<UUID, BookReasonResult> reasonMap = toReasonMap(reasonResults);
+  /** bookInfos + bookReasons → BookResponse 변환 */
+  public static List<BookResponse> map(List<BookInfo> bookInfos, List<BookReason> bookReasons) {
+    Map<UUID, BookReason> reasonMap = toReasonMap(bookReasons);
 
     return bookInfos.stream()
         .map(book -> toResponse(book, reasonMap.get(book.id())))
@@ -21,7 +20,7 @@ public class BookResponseMapper {
         .toList();
   }
 
-  private static BookResponse toResponse(BookInfo book, BookReasonResult reason) {
+  private static BookResponse toResponse(BookInfo book, BookReason reason) {
     return BookResponse.builder()
         .bookId(book.id())
         .isbn(book.isbn())
@@ -37,8 +36,8 @@ public class BookResponseMapper {
         .build();
   }
 
-  /** bookId → BookReasonResult Map 변환 */
-  private static Map<UUID, BookReasonResult> toReasonMap(List<BookReasonResult> reasons) {
-    return reasons.stream().collect(Collectors.toMap(BookReasonResult::bookId, r -> r));
+  /** BookReason → (bookId, BookReason) Map 변환 */
+  private static Map<UUID, BookReason> toReasonMap(List<BookReason> reasons) {
+    return reasons.stream().collect(Collectors.toMap(BookReason::bookId, r -> r));
   }
 }

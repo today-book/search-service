@@ -1,9 +1,9 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
-import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
-import com.todaybook.searchservice.application.reason.BookReasonResult;
-import com.todaybook.searchservice.application.reason.BookReasonResults;
+import com.todaybook.searchservice.application.reason.BookReason;
+import com.todaybook.searchservice.application.reason.BookReasonGenerator;
+import com.todaybook.searchservice.application.reason.BookReasons;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -21,15 +21,15 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-@EnableConfigurationProperties(BookReasonGenerationProperties.class)
+@EnableConfigurationProperties(BookReasonGeneratorProperties.class)
 @Component
 @RequiredArgsConstructor
-public class GeminiBookReasonGenerationService implements BookReasonGenerationService {
+public class GeminiBookReasonGenerator implements BookReasonGenerator {
 
   private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
   private final ChatModel chatModel;
-  private final BookReasonGenerationProperties properties;
+  private final BookReasonGeneratorProperties properties;
 
   private ChatClient chatClient;
 
@@ -57,15 +57,14 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
       throw new IllegalStateException(
           "Failed to load emotion prompt template from classpath:prompts/reason_prompt.txt", e);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to initialize GeminiBookReasonGenerationService", e);
+      throw new IllegalStateException("Failed to initialize GeminiBookReasonGenerator", e);
     }
   }
 
   @Override
-  public BookReasonResults generateReasons(
-      List<BookSearchResult> books, EmotionResult emotionQuery) {
+  public BookReasons generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery) {
 
-    List<CompletableFuture<BookReasonResult>> futures =
+    List<CompletableFuture<BookReason>> futures =
         books.stream()
             .map(
                 book ->
@@ -73,12 +72,11 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
                         () -> generateReason(book, emotionQuery), executor))
             .toList();
 
-    List<BookReasonResult> bookReasonResultList =
-        futures.stream().map(CompletableFuture::join).toList();
-    return new BookReasonResults(bookReasonResultList);
+    List<BookReason> bookReasonList = futures.stream().map(CompletableFuture::join).toList();
+    return new BookReasons(bookReasonList);
   }
 
-  private BookReasonResult generateReason(BookSearchResult book, EmotionResult emotionQuery) {
+  private BookReason generateReason(BookSearchResult book, EmotionResult emotionQuery) {
     return chatClient
         .prompt()
         .user(
@@ -91,6 +89,6 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
                     .param("categories", book.getCategories())
                     .param("description", book.getDescription()))
         .call()
-        .entity(BookReasonResult.class);
+        .entity(BookReason.class);
   }
 }
