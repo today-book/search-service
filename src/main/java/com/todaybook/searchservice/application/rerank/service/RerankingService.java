@@ -7,13 +7,13 @@ import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
 import com.todaybook.searchservice.infrastructure.opensearch.repository.BookEmbeddingRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -45,13 +45,13 @@ public class RerankingService {
    * @return 감정 + 벡터 점수 기반으로 재정렬된 추천 도서 목록
    */
   public List<BookSearchResult> rerank(
-      List<ScoredBookId> candidates, EmotionType targetEmotion, int limit) {
+      ScoredBookIds candidates, EmotionType targetEmotion, int limit) {
     if (limit <= 0) {
       throw new IllegalArgumentException("Limit must be greater than 0, but was: " + limit);
     }
 
     // 검색 결과를 빠르게 조회하기 위해 Map<BookId, ScoredBookId> 로 변환
-    Map<UUID, ScoredBookId> scoredBookIdMap = toScoredBookIdMap(candidates);
+    Map<UUID, ScoredBookId> scoredBookIdMap = candidates.toBookIdMap();
 
     // 실제 도서 임베딩 로드
     List<BookEmbeddingDocument> embeddings =
@@ -92,19 +92,8 @@ public class RerankingService {
     double emotionScore = emotionScoreCalculator.calculate(bookEmotion, targetEmotion);
 
     // 최종 점수 계산 (초기 점수 + 감정 점수)
-    double finalScore = finalScoreCalculator.calculate(scoredBookId.getScore(), emotionScore);
+    double finalScore = finalScoreCalculator.calculate(scoredBookId.score(), emotionScore);
 
-    return new BookEmbeddingScoreContext(
-        embedding, scoredBookId.getScore(), emotionScore, finalScore);
-  }
-
-  /**
-   * 후보 도서를 빠르게 조회하기 위한 Map 변환 메서드.
-   *
-   * @param scoredBookIds 초기 vector 검색 결과 리스트
-   * @return Map<bookId, ScoredBookId>
-   */
-  private Map<UUID, ScoredBookId> toScoredBookIdMap(List<ScoredBookId> scoredBookIds) {
-    return scoredBookIds.stream().collect(Collectors.toMap(ScoredBookId::getBookId, c -> c));
+    return new BookEmbeddingScoreContext(embedding, scoredBookId.score(), emotionScore, finalScore);
   }
 }

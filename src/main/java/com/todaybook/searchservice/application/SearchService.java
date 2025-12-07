@@ -11,7 +11,7 @@ import com.todaybook.searchservice.application.reason.BookReasonGenerator;
 import com.todaybook.searchservice.application.reason.BookReasons;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
-import com.todaybook.searchservice.application.vector.ScoredBookId;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import com.todaybook.searchservice.application.vector.VectorSearchService;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +61,7 @@ public class SearchService {
     EmotionResult emotion = emotionAnalysisService.analyze(query);
 
     // 2. 벡터 유사도 기반 후보 Top-N 검색
-    List<ScoredBookId> candidates =
+    ScoredBookIds candidates =
         searchVectorCandidates(emotion.query(), searchProperties.getVectorTopK());
 
     // 3. 감정 기반 재랭킹 (코사인 점수 + 감정 점수 조합)
@@ -82,11 +82,11 @@ public class SearchService {
    * 벡터 검색 서비스를 통해 유사도 기반 후보를 조회한다.
    *
    * @param rewrittenQuery 감정 분석을 통해 재작성된 쿼리
-   * @param topN 가져올 후보 개수
+   * @param topK 가져올 후보 개수
    * @return 벡터 검색 후보 목록
    */
-  private List<ScoredBookId> searchVectorCandidates(String rewrittenQuery, int topN) {
-    return vectorSearchService.searchTopN(rewrittenQuery, topN);
+  private ScoredBookIds searchVectorCandidates(String rewrittenQuery, int topK) {
+    return vectorSearchService.searchTopK(rewrittenQuery, topK);
   }
 
   /**
@@ -97,8 +97,8 @@ public class SearchService {
    * @return 재랭킹된 도서 리스트
    */
   private List<BookSearchResult> rerankCandidates(
-      List<ScoredBookId> candidates, EmotionResult emotion, int topK) {
-    return rerankingService.rerank(candidates, emotion.emotion(), topK);
+      ScoredBookIds candidates, EmotionResult emotion, int topN) {
+    return rerankingService.rerank(candidates, emotion.emotion(), topN);
   }
 
   /**
