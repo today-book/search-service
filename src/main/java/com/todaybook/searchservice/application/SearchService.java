@@ -9,7 +9,7 @@ import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerator;
 import com.todaybook.searchservice.application.reason.BookReasons;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
 import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import com.todaybook.searchservice.application.vector.VectorSearchService;
@@ -65,7 +65,7 @@ public class SearchService {
         searchVectorCandidates(emotion.query(), searchProperties.getVectorTopK());
 
     // 3. 감정 기반 재랭킹 (코사인 점수 + 감정 점수 조합)
-    List<BookSearchResult> reranked =
+    RerankedBooks reranked =
         rerankCandidates(candidates, emotion, searchProperties.getRerankTopN());
 
     // 4. LLM 기반 추천 이유 및 적합도 점수 생성
@@ -75,7 +75,7 @@ public class SearchService {
     List<BookInfo> bookInfos = fetchBookInfos(bookReasons.bookIds());
 
     // 6. 도서 정보 + 추천 이유를 조합하여 최종 응답 DTO 생성
-    return BookResponseMapper.map(bookInfos, bookReasons.reasons());
+    return BookResponseMapper.map(bookInfos, bookReasons.values());
   }
 
   /**
@@ -96,7 +96,7 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 재랭킹된 도서 리스트
    */
-  private List<BookSearchResult> rerankCandidates(
+  private RerankedBooks rerankCandidates(
       ScoredBookIds candidates, EmotionResult emotion, int topN) {
     return rerankingService.rerank(candidates, emotion.emotion(), topN);
   }
@@ -108,7 +108,7 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 추천 이유 생성 결과 목록
    */
-  private BookReasons generateRecommendReason(List<BookSearchResult> books, EmotionResult emotion) {
+  private BookReasons generateRecommendReason(RerankedBooks books, EmotionResult emotion) {
     return bookReasonGenerationService.generateReasons(books, emotion);
   }
 

@@ -3,7 +3,8 @@ package com.todaybook.searchservice.application.rerank.service;
 import com.todaybook.searchservice.application.emotion.EmotionType;
 import com.todaybook.searchservice.application.rerank.calculator.EmotionScoreCalculator;
 import com.todaybook.searchservice.application.rerank.calculator.FinalScoreCalculator;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBook;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
@@ -44,8 +45,7 @@ public class RerankingService {
    * @param targetEmotion 사용자가 가진 목표 감정(추천 기준)
    * @return 감정 + 벡터 점수 기반으로 재정렬된 추천 도서 목록
    */
-  public List<BookSearchResult> rerank(
-      ScoredBookIds candidates, EmotionType targetEmotion, int limit) {
+  public RerankedBooks rerank(ScoredBookIds candidates, EmotionType targetEmotion, int limit) {
     if (limit <= 0) {
       throw new IllegalArgumentException("Limit must be greater than 0, but was: " + limit);
     }
@@ -58,12 +58,14 @@ public class RerankingService {
         bookEmbeddingRepository.findAllByIds(scoredBookIdMap.keySet().stream().toList());
 
     // 각 도서에 대해 감정 점수 + 최종 점수를 계산하여 정렬 후 Response 로 변환
-    return embeddings.stream()
-        .map(embedding -> calculateScoreContext(embedding, scoredBookIdMap, targetEmotion))
-        .sorted(Comparator.comparing(BookEmbeddingScoreContext::finalScore).reversed())
-        .limit(limit)
-        .map(responseMapper::toResponse)
-        .toList();
+    List<RerankedBook> rerankedBookList =
+        embeddings.stream()
+            .map(embedding -> calculateScoreContext(embedding, scoredBookIdMap, targetEmotion))
+            .sorted(Comparator.comparing(BookEmbeddingScoreContext::finalScore).reversed())
+            .limit(limit)
+            .map(responseMapper::toResponse)
+            .toList();
+    return new RerankedBooks(rerankedBookList);
   }
 
   /**

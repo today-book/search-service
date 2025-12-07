@@ -1,10 +1,9 @@
 package com.todaybook.searchservice.application.reason;
 
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
-import java.util.List;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 
 public interface BookReasonGenerator {
 
-  BookReasons generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery);
+  BookReasons generateReasons(RerankedBooks books, EmotionResult emotionQuery);
 }

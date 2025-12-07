@@ -4,7 +4,8 @@ import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReason;
 import com.todaybook.searchservice.application.reason.BookReasonGenerator;
 import com.todaybook.searchservice.application.reason.BookReasons;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBook;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -62,10 +63,10 @@ public class GeminiBookReasonGenerator implements BookReasonGenerator {
   }
 
   @Override
-  public BookReasons generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery) {
+  public BookReasons generateReasons(RerankedBooks books, EmotionResult emotionQuery) {
 
     List<CompletableFuture<BookReason>> futures =
-        books.stream()
+        books.values().stream()
             .map(
                 book ->
                     CompletableFuture.supplyAsync(
@@ -76,7 +77,7 @@ public class GeminiBookReasonGenerator implements BookReasonGenerator {
     return new BookReasons(bookReasonList);
   }
 
-  private BookReason generateReason(BookSearchResult book, EmotionResult emotionQuery) {
+  private BookReason generateReason(RerankedBook book, EmotionResult emotionQuery) {
     return chatClient
         .prompt()
         .user(
@@ -84,10 +85,10 @@ public class GeminiBookReasonGenerator implements BookReasonGenerator {
                 u.text(promptTemplate)
                     .param("emotion", emotionQuery.emotion())
                     .param("query", emotionQuery.query())
-                    .param("bookId", book.getBookId().toString())
-                    .param("title", book.getTitle())
-                    .param("categories", book.getCategories())
-                    .param("description", book.getDescription()))
+                    .param("bookId", book.bookId().toString())
+                    .param("title", book.title())
+                    .param("categories", book.categories())
+                    .param("description", book.description()))
         .call()
         .entity(BookReason.class);
   }

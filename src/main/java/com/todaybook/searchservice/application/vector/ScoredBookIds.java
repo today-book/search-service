@@ -6,10 +6,9 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public record ScoredBookIds(List<ScoredBookId> scoredBookIdList) {
+public record ScoredBookIds(List<ScoredBookId> values) {
 
   public Map<UUID, ScoredBookId> toBookIdMap() {
-    return scoredBookIdList().stream()
-        .collect(Collectors.toMap(ScoredBookId::bookId, Function.identity()));
+    return values().stream().collect(Collectors.toMap(ScoredBookId::bookId, Function.identity()));
   }
 }
