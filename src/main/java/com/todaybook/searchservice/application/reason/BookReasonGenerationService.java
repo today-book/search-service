@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface BookReasonGenerationService {
 
-  List<BookReasonResult> generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery);
+  BookReasonResults generateReasons(List<BookSearchResult> books, EmotionResult emotionQuery);
 }

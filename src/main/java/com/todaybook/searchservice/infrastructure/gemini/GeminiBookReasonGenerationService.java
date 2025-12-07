@@ -3,6 +3,7 @@ package com.todaybook.searchservice.infrastructure.gemini;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
 import com.todaybook.searchservice.application.reason.BookReasonResult;
+import com.todaybook.searchservice.application.reason.BookReasonResults;
 import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
   }
 
   @Override
-  public List<BookReasonResult> generateReasons(
+  public BookReasonResults generateReasons(
       List<BookSearchResult> books, EmotionResult emotionQuery) {
 
     List<CompletableFuture<BookReasonResult>> futures =
@@ -72,7 +73,9 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
                         () -> generateReason(book, emotionQuery), executor))
             .toList();
 
-    return futures.stream().map(CompletableFuture::join).toList();
+    List<BookReasonResult> bookReasonResultList =
+        futures.stream().map(CompletableFuture::join).toList();
+    return new BookReasonResults(bookReasonResultList);
   }
 
   private BookReasonResult generateReason(BookSearchResult book, EmotionResult emotionQuery) {
