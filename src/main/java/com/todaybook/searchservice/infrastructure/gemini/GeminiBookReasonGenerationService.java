@@ -54,9 +54,9 @@ public class GeminiBookReasonGenerationService implements BookReasonGenerationSe
       promptTemplate = promptTemplateResource.getContentAsString(StandardCharsets.UTF_8);
     } catch (IOException e) {
       throw new IllegalStateException(
-          "Failed to load emotion prompt template from classpath:prompts/emotion_prompt.txt", e);
+          "Failed to load emotion prompt template from classpath:prompts/reason_prompt.txt", e);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to initialize GeminiEmotionAnalysisService", e);
+      throw new IllegalStateException("Failed to initialize GeminiBookReasonGenerationService", e);
     }
   }
 
