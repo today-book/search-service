@@ -2,17 +2,17 @@ package com.todaybook.searchservice.application.dto;
 
 import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.application.reason.BookReason;
+import com.todaybook.searchservice.application.reason.BookReasons;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class BookResponseMapper {
 
   /** bookInfos + bookReasons → BookResponse 변환 */
-  public static List<BookResponse> map(List<BookInfo> bookInfos, List<BookReason> bookReasons) {
-    Map<UUID, BookReason> reasonMap = toReasonMap(bookReasons);
+  public static List<BookResponse> map(List<BookInfo> bookInfos, BookReasons bookReasons) {
+    Map<UUID, BookReason> reasonMap = bookReasons.toReasonMap();
 
     return bookInfos.stream()
         .map(book -> toResponse(book, reasonMap.get(book.id())))
@@ -34,10 +34,5 @@ public class BookResponseMapper {
         .score(reason.score())
         .reason(reason.reason())
         .build();
-  }
-
-  /** BookReason → (bookId, BookReason) Map 변환 */
-  private static Map<UUID, BookReason> toReasonMap(List<BookReason> reasons) {
-    return reasons.stream().collect(Collectors.toMap(BookReason::bookId, r -> r));
   }
 }

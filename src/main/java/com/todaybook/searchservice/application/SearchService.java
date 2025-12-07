@@ -11,8 +11,8 @@ import com.todaybook.searchservice.application.reason.BookReasonGenerator;
 import com.todaybook.searchservice.application.reason.BookReasons;
 import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
-import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import com.todaybook.searchservice.application.vector.BookVectorSearcher;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +75,7 @@ public class SearchService {
     List<BookInfo> bookInfos = fetchBookInfos(bookReasons.bookIds());
 
     // 6. 도서 정보 + 추천 이유를 조합하여 최종 응답 DTO 생성
-    return BookResponseMapper.map(bookInfos, bookReasons.values());
+    return BookResponseMapper.map(bookInfos, bookReasons);
   }
 
   /**

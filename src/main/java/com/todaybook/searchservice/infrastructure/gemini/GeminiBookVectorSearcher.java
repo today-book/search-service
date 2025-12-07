@@ -1,8 +1,8 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
+import com.todaybook.searchservice.application.vector.BookVectorSearcher;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
 import com.todaybook.searchservice.application.vector.ScoredBookIds;
-import com.todaybook.searchservice.application.vector.BookVectorSearcher;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
