@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.book.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,5 +12,5 @@ public record BookInfo(
     String description,
     List<String> categories,
     String publisher,
-    LocalDateTime publishedAt,
+    LocalDate publishedAt,
     String thumbnail) {}
