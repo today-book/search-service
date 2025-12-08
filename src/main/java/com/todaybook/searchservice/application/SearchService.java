@@ -26,11 +26,11 @@ import org.springframework.stereotype.Service;
  * <p>핵심 처리 단계:
  *
  * <ul>
- *   <li>1) EmotionAnalysisService → 감정 분석 및 임베딩 검색용 Query 생성
- *   <li>2) VectorSearchService → 벡터 유사도 기반 Top-N 후보 검색
+ *   <li>1) EmotionAnalyzer → 감정 분석 및 임베딩 검색용 Query 생성
+ *   <li>2) BookVectorSearcher → 벡터 유사도 기반 Top-N 후보 검색
  *   <li>3) RerankingService → 감정 기반 재랭킹 점수 계산
  *   <li>4) BookReasonGenerator → LLM 기반 추천 이유 및 적합도 점수 생성
- *   <li>4) BookInfoProvider → 책 부가 정보 조회
+ *   <li>5) BookInfoProvider → 책 부가 정보 조회
  *   <li>6) BookResponseMapper → 최종 결과 DTO 조립 및 점수 기준 정렬
  * </ul>
  *
