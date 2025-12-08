@@ -38,6 +38,10 @@ public class HttpBookInfoProvider implements BookInfoProvider {
    */
   @Override
   public List<BookInfo> getBooksByIds(List<UUID> bookIds) {
+    if (bookIds == null || bookIds.isEmpty()) {
+      return List.of();
+    }
+
     List<BookInfo> books = bookFeignClient.getBookByIds(bookIds);
     logMissingBookIdsIfAny(bookIds, books);
     return books;
