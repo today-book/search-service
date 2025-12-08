@@ -13,7 +13,7 @@ public class SearchController {
 
   private final SearchService service;
 
-  @GetMapping("/search")
+  @GetMapping("/books")
   public List<BookResponse> search(String query) {
     return service.search(query);
   }
