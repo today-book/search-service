@@ -3,8 +3,10 @@ package com.todaybook.searchservice.application;
 import com.todaybook.searchservice.application.book.BookInfoProvider;
 import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.application.config.SearchProperties;
-import com.todaybook.searchservice.application.dto.BookResponse;
 import com.todaybook.searchservice.application.dto.BookResponseMapper;
+import com.todaybook.searchservice.application.dto.BookSearchRequest;
+import com.todaybook.searchservice.application.dto.BookSearchResponse;
+import com.todaybook.searchservice.application.embedding.BookSearchQueryBuilder;
 import com.todaybook.searchservice.application.emotion.EmotionAnalyzer;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
 import com.todaybook.searchservice.application.reason.BookReasonGenerator;
@@ -52,13 +54,13 @@ public class SearchService {
   /**
    * 사용자의 검색 질의를 기반으로 전체 검색 프로세스를 실행한다.
    *
-   * @param query 사용자 검색 문장
+   * @param request 사용자 검색 질의
    * @return 최종 추천 도서 목록
    */
-  public List<BookResponse> search(String query) {
+  public List<BookSearchResponse> search(BookSearchRequest request) {
 
     // 1. 사용자의 감정 분석 및 벡터 검색용 Query 재작성
-    EmotionResult emotion = emotionAnalyzer.analyze(query);
+    EmotionResult emotion = emotionAnalyzer.analyze(BookSearchQueryBuilder.build(request));
 
     // 2. 벡터 유사도 기반 후보 Top-N 검색
     ScoredBookIds candidates =

@@ -43,8 +43,8 @@ public class HttpBookInfoProvider implements BookInfoProvider {
    *
    * <p>조회 요청 시 ID 목록이 {@code null}이거나 비어 있는 경우, 불필요한 외부 호출을 방지하기 위해 빈 리스트를 즉시 반환한다.
    *
-   * <p>외부 서비스 응답에 포함된 조회 실패 ID 목록({@link FeignBooksResponse#failure()})은 로그로 기록하여 데이터 정합성 및 연계 장애 분석에
-   * 활용한다.
+   * <p>외부 서비스 응답에 포함된 조회 실패 ID 목록({@link FeignBooksResponse#failure()})은 로그로 기록하여 데이터 정합성 및 연계 장애
+   * 분석에 활용한다.
    *
    * @param bookIds 조회할 도서 ID 목록
    * @return 조회된 도서 정보를 담은 {@link BookInfo} 리스트

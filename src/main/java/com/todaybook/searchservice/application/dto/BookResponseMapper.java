@@ -30,13 +30,13 @@ public class BookResponseMapper {
    * @param bookReasons 추천 사유 및 점수 일급 컬렉션
    * @return 점수 기준으로 정렬된 BookResponse 목록
    */
-  public static List<BookResponse> map(List<BookInfo> bookInfos, BookReasons bookReasons) {
+  public static List<BookSearchResponse> map(List<BookInfo> bookInfos, BookReasons bookReasons) {
     Map<UUID, BookReason> reasonMap = bookReasons.toReasonMap();
 
     return bookInfos.stream()
         .map(book -> toResponseIfPossible(book, reasonMap))
         .flatMap(Optional::stream)
-        .sorted(Comparator.comparing(BookResponse::score).reversed())
+        .sorted(Comparator.comparing(BookSearchResponse::score).reversed())
         .toList();
   }
 
@@ -45,7 +45,7 @@ public class BookResponseMapper {
    *
    * <p>BookReason이 누락된 경우 로그만 남기고 빈 Optional을 반환한다.
    */
-  private static Optional<BookResponse> toResponseIfPossible(
+  private static Optional<BookSearchResponse> toResponseIfPossible(
       BookInfo book, Map<UUID, BookReason> reasonMap) {
 
     BookReason reason = reasonMap.get(book.id());
@@ -66,8 +66,8 @@ public class BookResponseMapper {
    * @param reason 추천 사유 및 점수 정보
    * @return API 응답용 BookResponse
    */
-  private static BookResponse toResponse(BookInfo book, BookReason reason) {
-    return BookResponse.builder()
+  private static BookSearchResponse toResponse(BookInfo book, BookReason reason) {
+    return BookSearchResponse.builder()
         .bookId(book.id())
         .isbn(book.isbn())
         .title(book.title())
