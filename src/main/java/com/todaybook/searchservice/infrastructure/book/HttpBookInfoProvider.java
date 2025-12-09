@@ -4,6 +4,7 @@ import com.todaybook.searchservice.application.book.BookInfoProvider;
 import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.infrastructure.feign.BookFeignClient;
 import com.todaybook.searchservice.infrastructure.feign.dto.FeignBooksResponse;
+import com.todaybook.searchservice.infrastructure.feign.dto.FeignBooksResponse.FeignBookResponse;
 import com.todaybook.searchservice.infrastructure.feign.mapper.BookInfoMapper;
 import java.util.List;
 import java.util.UUID;
@@ -61,6 +62,10 @@ public class HttpBookInfoProvider implements BookInfoProvider {
       log.warn("Missing BookInfo detected. missingBookIds={}", bookListResponse.failure());
     }
 
-    return bookListResponse.found().stream().map(BookInfoMapper::toBookInfo).toList();
+    List<FeignBookResponse> foundBooks = bookListResponse.found();
+    if (foundBooks == null || foundBooks.isEmpty()) {
+      return List.of();
+    }
+    return foundBooks.stream().map(BookInfoMapper::toBookInfo).toList();
   }
 }
