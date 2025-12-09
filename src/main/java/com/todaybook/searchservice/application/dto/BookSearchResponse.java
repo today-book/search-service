@@ -6,7 +6,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record BookResponse(
+public record BookSearchResponse(
     UUID bookId,
     String isbn,
     String title,

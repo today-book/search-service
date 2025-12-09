@@ -1,7 +1,8 @@
 package com.todaybook.searchservice.controller;
 
 import com.todaybook.searchservice.application.SearchService;
-import com.todaybook.searchservice.application.dto.BookResponse;
+import com.todaybook.searchservice.application.dto.BookSearchRequest;
+import com.todaybook.searchservice.application.dto.BookSearchResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,7 @@ public class SearchController {
   private final SearchService service;
 
   @GetMapping("/books")
-  public List<BookResponse> search(String query) {
-    return service.search(query);
+  public List<BookSearchResponse> search(BookSearchRequest request) {
+    return service.search(request);
   }
 }
