@@ -5,14 +5,14 @@ import com.todaybook.searchservice.application.book.dto.BookInfo;
 import com.todaybook.searchservice.application.config.SearchProperties;
 import com.todaybook.searchservice.application.dto.BookResponse;
 import com.todaybook.searchservice.application.dto.BookResponseMapper;
-import com.todaybook.searchservice.application.emotion.EmotionAnalysisService;
+import com.todaybook.searchservice.application.emotion.EmotionAnalyzer;
 import com.todaybook.searchservice.application.emotion.dto.EmotionResult;
-import com.todaybook.searchservice.application.reason.BookReasonGenerationService;
-import com.todaybook.searchservice.application.reason.BookReasonResults;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
+import com.todaybook.searchservice.application.reason.BookReasonGenerator;
+import com.todaybook.searchservice.application.reason.BookReasons;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.service.RerankingService;
-import com.todaybook.searchservice.application.vector.ScoredBookId;
-import com.todaybook.searchservice.application.vector.VectorSearchService;
+import com.todaybook.searchservice.application.vector.BookVectorSearcher;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,11 +26,11 @@ import org.springframework.stereotype.Service;
  * <p>핵심 처리 단계:
  *
  * <ul>
- *   <li>1) EmotionAnalysisService → 감정 분석 및 임베딩 검색용 Query 생성
- *   <li>2) VectorSearchService → 벡터 유사도 기반 Top-N 후보 검색
+ *   <li>1) EmotionAnalyzer → 감정 분석 및 임베딩 검색용 Query 생성
+ *   <li>2) BookVectorSearcher → 벡터 유사도 기반 Top-N 후보 검색
  *   <li>3) RerankingService → 감정 기반 재랭킹 점수 계산
- *   <li>4) BookReasonGenerationService → LLM 기반 추천 이유 및 적합도 점수 생성
- *   <li>4) BookInfoProvider → 책 부가 정보 조회
+ *   <li>4) BookReasonGenerator → LLM 기반 추천 이유 및 적합도 점수 생성
+ *   <li>5) BookInfoProvider → 책 부가 정보 조회
  *   <li>6) BookResponseMapper → 최종 결과 DTO 조립 및 점수 기준 정렬
  * </ul>
  *
@@ -42,10 +42,10 @@ import org.springframework.stereotype.Service;
 @EnableConfigurationProperties(SearchProperties.class)
 public class SearchService {
 
-  private final EmotionAnalysisService emotionAnalysisService;
-  private final VectorSearchService vectorSearchService;
+  private final EmotionAnalyzer emotionAnalyzer;
+  private final BookVectorSearcher bookVectorSearcher;
   private final RerankingService rerankingService;
-  private final BookReasonGenerationService bookReasonGenerationService;
+  private final BookReasonGenerator bookReasonGenerator;
   private final BookInfoProvider bookInfoProvider;
   private final SearchProperties searchProperties;
 
@@ -58,35 +58,35 @@ public class SearchService {
   public List<BookResponse> search(String query) {
 
     // 1. 사용자의 감정 분석 및 벡터 검색용 Query 재작성
-    EmotionResult emotion = emotionAnalysisService.analyze(query);
+    EmotionResult emotion = emotionAnalyzer.analyze(query);
 
     // 2. 벡터 유사도 기반 후보 Top-N 검색
-    List<ScoredBookId> candidates =
-        searchVectorCandidates(emotion.query(), searchProperties.getVectorTopK());
+    ScoredBookIds candidates =
+        searchBookCandidates(emotion.query(), searchProperties.getVectorTopK());
 
     // 3. 감정 기반 재랭킹 (코사인 점수 + 감정 점수 조합)
-    List<BookSearchResult> reranked =
-        rerankCandidates(candidates, emotion, searchProperties.getRerankTopN());
+    RerankedBooks reranked =
+        rerankBookCandidates(candidates, emotion, searchProperties.getRerankTopN());
 
     // 4. LLM 기반 추천 이유 및 적합도 점수 생성
-    BookReasonResults bookReasonResults = generateRecommendReason(reranked, emotion);
+    BookReasons bookReasons = generateRecommendReasons(reranked, emotion);
 
     // 5. 책 부가 정보 조회
-    List<BookInfo> bookInfos = fetchBookInfos(bookReasonResults.bookIds());
+    List<BookInfo> bookInfos = fetchBookInfos(bookReasons.bookIds());
 
     // 6. 도서 정보 + 추천 이유를 조합하여 최종 응답 DTO 생성
-    return BookResponseMapper.map(bookInfos, bookReasonResults.reasons());
+    return BookResponseMapper.map(bookInfos, bookReasons);
   }
 
   /**
    * 벡터 검색 서비스를 통해 유사도 기반 후보를 조회한다.
    *
    * @param rewrittenQuery 감정 분석을 통해 재작성된 쿼리
-   * @param topN 가져올 후보 개수
+   * @param topK 가져올 후보 개수
    * @return 벡터 검색 후보 목록
    */
-  private List<ScoredBookId> searchVectorCandidates(String rewrittenQuery, int topN) {
-    return vectorSearchService.searchTopN(rewrittenQuery, topN);
+  private ScoredBookIds searchBookCandidates(String rewrittenQuery, int topK) {
+    return bookVectorSearcher.searchTopK(rewrittenQuery, topK);
   }
 
   /**
@@ -96,9 +96,9 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 재랭킹된 도서 리스트
    */
-  private List<BookSearchResult> rerankCandidates(
-      List<ScoredBookId> candidates, EmotionResult emotion, int topK) {
-    return rerankingService.rerank(candidates, emotion.emotion(), topK);
+  private RerankedBooks rerankBookCandidates(
+      ScoredBookIds candidates, EmotionResult emotion, int topN) {
+    return rerankingService.rerank(candidates, emotion.emotion(), topN);
   }
 
   /**
@@ -108,9 +108,8 @@ public class SearchService {
    * @param emotion 감정 분석 결과
    * @return 추천 이유 생성 결과 목록
    */
-  private BookReasonResults generateRecommendReason(
-      List<BookSearchResult> books, EmotionResult emotion) {
-    return bookReasonGenerationService.generateReasons(books, emotion);
+  private BookReasons generateRecommendReasons(RerankedBooks books, EmotionResult emotion) {
+    return bookReasonGenerator.generateReasons(books, emotion);
   }
 
   /**

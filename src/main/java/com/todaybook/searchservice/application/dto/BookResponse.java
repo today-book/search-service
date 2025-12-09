@@ -1,6 +1,6 @@
 package com.todaybook.searchservice.application.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -14,7 +14,7 @@ public record BookResponse(
     String description,
     List<String> categories,
     String publisher,
-    LocalDateTime publishedAt,
+    LocalDate publishedAt,
     String thumbnail,
     double score,
     String reason) {}

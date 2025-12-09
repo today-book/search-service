@@ -3,17 +3,18 @@ package com.todaybook.searchservice.application.rerank.service;
 import com.todaybook.searchservice.application.emotion.EmotionType;
 import com.todaybook.searchservice.application.rerank.calculator.EmotionScoreCalculator;
 import com.todaybook.searchservice.application.rerank.calculator.FinalScoreCalculator;
-import com.todaybook.searchservice.application.rerank.dto.BookSearchResult;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBook;
+import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
 import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbeddingDocument;
 import com.todaybook.searchservice.infrastructure.opensearch.repository.BookEmbeddingRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,26 +45,27 @@ public class RerankingService {
    * @param targetEmotion 사용자가 가진 목표 감정(추천 기준)
    * @return 감정 + 벡터 점수 기반으로 재정렬된 추천 도서 목록
    */
-  public List<BookSearchResult> rerank(
-      List<ScoredBookId> candidates, EmotionType targetEmotion, int limit) {
+  public RerankedBooks rerank(ScoredBookIds candidates, EmotionType targetEmotion, int limit) {
     if (limit <= 0) {
       throw new IllegalArgumentException("Limit must be greater than 0, but was: " + limit);
     }
 
     // 검색 결과를 빠르게 조회하기 위해 Map<BookId, ScoredBookId> 로 변환
-    Map<UUID, ScoredBookId> scoredBookIdMap = toScoredBookIdMap(candidates);
+    Map<UUID, ScoredBookId> scoredBookIdMap = candidates.toBookIdMap();
 
     // 실제 도서 임베딩 로드
     List<BookEmbeddingDocument> embeddings =
         bookEmbeddingRepository.findAllByIds(scoredBookIdMap.keySet().stream().toList());
 
     // 각 도서에 대해 감정 점수 + 최종 점수를 계산하여 정렬 후 Response 로 변환
-    return embeddings.stream()
-        .map(embedding -> calculateScoreContext(embedding, scoredBookIdMap, targetEmotion))
-        .sorted(Comparator.comparing(BookEmbeddingScoreContext::finalScore).reversed())
-        .limit(limit)
-        .map(responseMapper::toResponse)
-        .toList();
+    List<RerankedBook> rerankedBookList =
+        embeddings.stream()
+            .map(embedding -> calculateScoreContext(embedding, scoredBookIdMap, targetEmotion))
+            .sorted(Comparator.comparing(BookEmbeddingScoreContext::finalScore).reversed())
+            .limit(limit)
+            .map(responseMapper::toResponse)
+            .toList();
+    return new RerankedBooks(rerankedBookList);
   }
 
   /**
@@ -92,19 +94,8 @@ public class RerankingService {
     double emotionScore = emotionScoreCalculator.calculate(bookEmotion, targetEmotion);
 
     // 최종 점수 계산 (초기 점수 + 감정 점수)
-    double finalScore = finalScoreCalculator.calculate(scoredBookId.getScore(), emotionScore);
+    double finalScore = finalScoreCalculator.calculate(scoredBookId.score(), emotionScore);
 
-    return new BookEmbeddingScoreContext(
-        embedding, scoredBookId.getScore(), emotionScore, finalScore);
-  }
-
-  /**
-   * 후보 도서를 빠르게 조회하기 위한 Map 변환 메서드.
-   *
-   * @param scoredBookIds 초기 vector 검색 결과 리스트
-   * @return Map<bookId, ScoredBookId>
-   */
-  private Map<UUID, ScoredBookId> toScoredBookIdMap(List<ScoredBookId> scoredBookIds) {
-    return scoredBookIds.stream().collect(Collectors.toMap(ScoredBookId::getBookId, c -> c));
+    return new BookEmbeddingScoreContext(embedding, scoredBookId.score(), emotionScore, finalScore);
   }
 }

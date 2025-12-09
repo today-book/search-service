@@ -1,7 +1,8 @@
 package com.todaybook.searchservice.infrastructure.gemini;
 
+import com.todaybook.searchservice.application.vector.BookVectorSearcher;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
-import com.todaybook.searchservice.application.vector.VectorSearchService;
+import com.todaybook.searchservice.application.vector.ScoredBookIds;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -13,17 +14,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GeminiVectorSearchService implements VectorSearchService {
+public class GeminiBookVectorSearcher implements BookVectorSearcher {
 
   private final VectorStore vectorStore;
 
   @Override
-  public List<ScoredBookId> searchTopN(String query, int topN) {
+  public ScoredBookIds searchTopK(String query, int topK) {
 
-    SearchRequest request = buildSearchRequest(query, topN);
+    SearchRequest request = buildSearchRequest(query, topK);
     List<Document> documents = vectorStore.similaritySearch(request);
 
-    return documents.stream().map(this::toScoredBookId).toList();
+    List<ScoredBookId> scoredBookIdList = documents.stream().map(this::toScoredBookId).toList();
+    return new ScoredBookIds(scoredBookIdList);
   }
 
   private SearchRequest buildSearchRequest(String query, int topK) {
@@ -32,9 +34,8 @@ public class GeminiVectorSearchService implements VectorSearchService {
 
   /** Document → BookEmbedding 변환 */
   private ScoredBookId toScoredBookId(Document doc) {
-    return ScoredBookId.builder()
-        .bookId(UUID.fromString(Objects.requireNonNull(doc.getId())))
-        .score(Objects.requireNonNull(doc.getScore()))
-        .build();
+    return new ScoredBookId(
+        UUID.fromString(Objects.requireNonNull(doc.getId())),
+        Objects.requireNonNull(doc.getScore()));
   }
 }

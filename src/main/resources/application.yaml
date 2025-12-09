@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   config:
     import: optional:file:.env[.properties]
@@ -36,3 +39,4 @@ custom:
 search:
   vector-top-k: 30
   rerank-top-n: 10
+
