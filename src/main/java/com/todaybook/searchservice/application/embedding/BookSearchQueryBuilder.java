@@ -15,11 +15,15 @@ public final class BookSearchQueryBuilder {
   private BookSearchQueryBuilder() {}
 
   public static String build(BookSearchRequest request) {
+    String emotions =
+        request.emotions() != null && !request.emotions().isEmpty()
+            ? String.join(", ", request.emotions())
+            : "(감정 정보 없음)";
+
     return """
 사용자는 다음 조건에 맞는 책을 찾고 있다.
 주제: %s
 현재 감정: %s
-"""
-        .formatted(request.query(), String.join(", ", request.emotions()));
+""".formatted(request.query(), emotions);
   }
 }

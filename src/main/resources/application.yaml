@@ -40,3 +40,7 @@ search:
   vector-top-k: 30
   rerank-top-n: 10
 
+todaybook:
+  security:
+    mvc:
+      enabled: true
