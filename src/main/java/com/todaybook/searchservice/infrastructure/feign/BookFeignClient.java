@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "book-service", path = "/internal/v1/books")
+@FeignClient(name = "book-service", path = "/internal/v1/books", url = "http://localhost:9003")
 public interface BookFeignClient {
 
   @PostMapping("/ids")

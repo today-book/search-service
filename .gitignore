@@ -38,3 +38,4 @@ out/
 
 .env
 gradle.properties
+src/main/resources/certs/**
