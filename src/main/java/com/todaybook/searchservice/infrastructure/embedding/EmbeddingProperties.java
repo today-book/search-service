@@ -23,6 +23,14 @@ public class EmbeddingProperties {
             () -> new IllegalStateException("Embedding configuration is not properly initialized"));
   }
 
+  public int getDimensions() {
+    return Optional.ofNullable(text)
+        .map(Text::getOptions)
+        .map(Options::getDimensions)
+        .orElseThrow(
+            () -> new IllegalStateException("Embedding configuration is not properly initialized"));
+  }
+
   @Data
   public static class Text {
     private Options options;
@@ -31,5 +39,6 @@ public class EmbeddingProperties {
   @Data
   public static class Options {
     private String model;
+    private int dimensions;
   }
 }

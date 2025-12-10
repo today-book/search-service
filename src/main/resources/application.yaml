@@ -2,6 +2,12 @@ server:
   port: 8081
 
 spring:
+  ssl:
+    bundle:
+      pem:
+        opensearch:
+          truststore:
+            certificate: classpath:certs/opensearch.crt
   config:
     import: optional:file:.env[.properties]
   application:
@@ -17,13 +23,18 @@ spring:
         text:
           options:
             model: gemini-embedding-001
+            dimensions: 768
     vectorstore:
       opensearch:
-        uris: http://localhost:9200
+        uris: ${OPENSEARCH_URIS}
+        username: ${OPENSEARCH_USERNAME}
+        password: ${OPENSEARCH_PASSWORD}
+        ssl-bundle: opensearch
         index-name: book-embedding-index
         initialize-schema: true
         similarity-function: cosinesimil
-        dimensions: 3072
+        use-approximate-knn: true
+        dimensions: 768
         read-timeout: 5000
         connect-timeout: 60000
 

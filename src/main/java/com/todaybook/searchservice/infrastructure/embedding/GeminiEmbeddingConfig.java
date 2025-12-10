@@ -25,7 +25,10 @@ public class GeminiEmbeddingConfig {
 
   @Bean
   public VertexAiTextEmbeddingOptions embeddingOptions() {
-    return VertexAiTextEmbeddingOptions.builder().model(embeddingProperties.getModel()).build();
+    return VertexAiTextEmbeddingOptions.builder()
+        .model(embeddingProperties.getModel())
+        .dimensions(embeddingProperties.getDimensions())
+        .build();
   }
 
   @Bean
