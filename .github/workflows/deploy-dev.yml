@@ -80,6 +80,7 @@ jobs:
             -e OPENSEARCH_URIS=${{ secrets.DEV_OPENSEARCH_URIS }} \
             -e OPENSEARCH_USERNAME=${{ secrets.DEV_OPENSEARCH_USERNAME }} \
             -e OPENSEARCH_PASSWORD=${{ secrets.DEV_OPENSEARCH_PASSWORD }} \
+            -e GCP_PROJECT_ID=${{ secrets.DEV_GCP_PROJECT_ID }} \
             ${{ env.IMAGE_URI }}
             
             echo "--- 배포 완료 ---"
