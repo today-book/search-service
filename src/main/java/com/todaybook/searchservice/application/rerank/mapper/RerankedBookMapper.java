@@ -6,13 +6,13 @@ import com.todaybook.searchservice.infrastructure.opensearch.document.BookEmbedd
 import org.springframework.stereotype.Component;
 
 /**
- * BookEmbedding 엔티티를 BookEmbeddingResponse DTO로 변환하는 Mapper.
+ * BookEmbeddingScoreContext 를 RerankedBook DTO로 변환하는 Mapper.
  *
  * @author 김지원
  * @since 1.0.0
  */
 @Component
-public class BookEmbeddingResponseMapper {
+public class RerankedBookMapper {
 
   public RerankedBook toResponse(BookEmbeddingScoreContext context) {
     BookEmbeddingDocument embedding = context.embedding();
