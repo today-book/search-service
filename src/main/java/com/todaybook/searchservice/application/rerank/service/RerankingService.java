@@ -5,7 +5,7 @@ import com.todaybook.searchservice.application.rerank.calculator.EmotionScoreCal
 import com.todaybook.searchservice.application.rerank.calculator.FinalScoreCalculator;
 import com.todaybook.searchservice.application.rerank.dto.RerankedBook;
 import com.todaybook.searchservice.application.rerank.dto.RerankedBooks;
-import com.todaybook.searchservice.application.rerank.mapper.BookEmbeddingResponseMapper;
+import com.todaybook.searchservice.application.rerank.mapper.RerankedBookMapper;
 import com.todaybook.searchservice.application.rerank.model.BookEmbeddingScoreContext;
 import com.todaybook.searchservice.application.vector.ScoredBookId;
 import com.todaybook.searchservice.application.vector.ScoredBookIds;
@@ -36,7 +36,7 @@ public class RerankingService {
   private final BookEmbeddingRepository bookEmbeddingRepository;
   private final EmotionScoreCalculator emotionScoreCalculator;
   private final FinalScoreCalculator finalScoreCalculator;
-  private final BookEmbeddingResponseMapper responseMapper;
+  private final RerankedBookMapper responseMapper;
 
   /**
    * 주어진 후보 도서 리스트(Top-N)를 감정 기반 점수를 포함해 재정렬한다.
