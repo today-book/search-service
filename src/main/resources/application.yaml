@@ -1,15 +1,7 @@
 server:
-  port: 8081
+  port: 9005
 
 spring:
-  ssl:
-    bundle:
-      pem:
-        opensearch:
-          truststore:
-            certificate: classpath:certs/opensearch.crt
-  config:
-    import: optional:file:.env[.properties]
   application:
     name: search-service
   ai:
@@ -29,7 +21,6 @@ spring:
         uris: ${OPENSEARCH_URIS}
         username: ${OPENSEARCH_USERNAME}
         password: ${OPENSEARCH_PASSWORD}
-        ssl-bundle: opensearch
         index-name: book-embedding-index
         initialize-schema: true
         similarity-function: cosinesimil
@@ -55,3 +46,35 @@ todaybook:
   security:
     mvc:
       enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+    import: optional:file:.env[.properties]
+  ssl:
+    bundle:
+      pem:
+        opensearch:
+          truststore:
+            certificate: ${OPENSEARCH_CERT_PATH}
+  ai:
+    vectorstore:
+      opensearch:
+        ssl-bundle: opensearch
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  ssl:
+    bundle:
+      pem:
+        opensearch:
+          truststore:
+            certificate: ${OPENSEARCH_CERT_PATH}
+  ai:
+    vectorstore:
+      opensearch:
+        ssl-bundle: opensearch
