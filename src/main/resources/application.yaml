@@ -29,6 +29,9 @@ spring:
         read-timeout: 5000
         connect-timeout: 60000
 
+book-service:
+  url: ${BOOK_SERVICE_URL}
+
 custom:
   vertex-ai:
     emotion-analysis:
