@@ -28,6 +28,9 @@ spring:
         dimensions: 768
         read-timeout: 5000
         connect-timeout: 60000
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
 
 book-service:
   url: ${BOOK_SERVICE_URL}
