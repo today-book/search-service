@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: search-service
+  cloud:
+    discovery:
+      enabled: true
   ai:
     vertex.ai:
       gemini:
@@ -31,7 +34,6 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: false
-
 book-service:
   url: ${BOOK_SERVICE_URL}
 
@@ -52,7 +54,10 @@ todaybook:
   security:
     mvc:
       enabled: true
-
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
 ---
 spring:
   config:
@@ -69,6 +74,13 @@ spring:
     vectorstore:
       opensearch:
         ssl-bundle: opensearch
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://localhost:9100/eureka/
 ---
 spring:
   config:
@@ -84,3 +96,10 @@ spring:
     vectorstore:
       opensearch:
         ssl-bundle: opensearch
+eureka:
+  instance:
+    hostname: search-service
+    prefer-ip-address: false
+  client:
+    service-url:
+      defaultZone: http://eureka-server:9100/eureka/
