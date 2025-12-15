@@ -50,6 +50,9 @@ dependencies {
     // openfeign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
+    // eureka-client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
     // common-mvc
     implementation 'org.todaybook:common-mvc:1.1.1'
 
