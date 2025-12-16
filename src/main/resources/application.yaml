@@ -34,8 +34,6 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: false
-book-service:
-  url: ${BOOK_SERVICE_URL}
 
 custom:
   vertex-ai:
