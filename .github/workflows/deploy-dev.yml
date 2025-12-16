@@ -78,7 +78,6 @@ jobs:
             -e GOOGLE_APPLICATION_CREDENTIALS=/var/secrets/gcp/search-key.json \
             -e SPRING_PROFILES_ACTIVE=${{ env.PROFILE }} \
             -e OPENSEARCH_CERT_PATH=file:/app/certs/opensearch.crt \
-            -e BOOK_SERVICE_URL=${{ secrets.DEV_BOOK_SERVICE_URL }} \
             -e OPENSEARCH_URIS=${{ secrets.DEV_OPENSEARCH_URIS }} \
             -e OPENSEARCH_USERNAME=${{ secrets.DEV_OPENSEARCH_USERNAME }} \
             -e OPENSEARCH_PASSWORD=${{ secrets.DEV_OPENSEARCH_PASSWORD }} \
