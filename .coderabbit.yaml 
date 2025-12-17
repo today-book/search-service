@@ -5,3 +5,5 @@ review:
     ignore:
       - merge
       - merge/**
+      - docs
+      - docs/**
