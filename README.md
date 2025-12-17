@@ -161,16 +161,7 @@
 
 ---
 
-## 7. Extensibility
-
-- LLM 교체 가능 (Gemini ↔ OpenAI ↔ Local Model)
-- Reranking 전략 확장 (가중치, 규칙 기반, ML 모델)
-- 추가 신호 결합 (최근성, 인기도, 사용자 히스토리)
-- 다중 인덱스 / 다중 도메인 검색 지원
-
----
-
-## 8. API Example
+## 7. API Example
 
 본 섹션은 Emotion-Aware Semantic Search API의 요청/응답 예시를 제공한다.
 
@@ -223,6 +214,16 @@ curl -G "https://dev-api.todaybook.life/public/v1/search/books" \
 - 감정 파라미터가 전달되지 않은 경우, 시스템은 질의 기반 감정 분석 결과를 기본 신호로 활용할 수 있다.
 - reason 필드는 추천 결과에 대한 설명을 제공하기 위한 용도로, 사용자에게 노출 가능하다.
 
+---
+
+## 8. Extensibility
+
+- LLM 교체 가능 (Gemini ↔ OpenAI ↔ Local Model)
+- Reranking 전략 확장 (가중치, 규칙 기반, ML 모델)
+- 추가 신호 결합 (최근성, 인기도, 사용자 히스토리)
+- 다중 인덱스 / 다중 도메인 검색 지원
+
+---
 
 ## 9. Summary
 
