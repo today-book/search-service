@@ -13,4 +13,4 @@ COPY ${JAR_FILE} app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
-EXPOSE 9005
+EXPOSE 8080
