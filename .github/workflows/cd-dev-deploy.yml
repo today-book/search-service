@@ -1,0 +1,52 @@
+name: CD (dev) - Deploy to Dev
+
+on:
+  workflow_run:
+    workflows: ["CI (dev) - Build & Push Image"]
+    types: [completed]
+
+permissions:
+  contents: read
+  packages: read  # 배포 서버에서 pull만 하면 read면 충분
+
+concurrency:
+  group: dev-deploy
+  cancel-in-progress: true
+
+env:
+  APP_NAME: search-service
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  APP_PORT: 9005
+
+jobs:
+  deploy:
+    # ✅ CI 성공 + dev 브랜치에서만
+    if: >
+      ${{
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'dev'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to dev server
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          # CI에서 푸시된 커밋 sha = head_sha
+          VERSION: dev-${{ github.event.workflow_run.head_sha }}
+          APP_NAME: ${{ env.APP_NAME }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+          APP_PORT: ${{ env.APP_PORT }}
+        with:
+          host: ${{ secrets.DEV_REMOTE_IP }}
+          username: ubuntu
+          key: ${{ secrets.DEV_REMOTE_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_REMOTE_SSH_PORT }}
+          envs: VERSION,APP_NAME,GHCR_TOKEN,GHCR_USER,APP_PORT
+          script: |
+            set -euo pipefail
+            cd /home/ubuntu/app/${APP_NAME}
+            echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            chmod +x deploy.sh
+            ./deploy.sh
