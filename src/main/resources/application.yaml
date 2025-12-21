@@ -138,4 +138,4 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://ip-10-0-0-183.ap-northeast-2.compute.internal/eureka/
+      defaultZone: http://ip-10-0-0-183.ap-northeast-2.compute.internal:9100/eureka/
