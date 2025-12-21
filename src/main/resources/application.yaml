@@ -135,6 +135,8 @@ spring:
         ssl-bundle: opensearch
 eureka:
   instance:
+    ip-address: ${EUREKA_INSTANCE_IP_ADDRESS:}
+    non-secure-port: ${EUREKA_INSTANCE_NONSECUREPORT:${server.port}}
     prefer-ip-address: true
   client:
     service-url:
