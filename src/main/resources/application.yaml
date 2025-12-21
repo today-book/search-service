@@ -117,3 +117,25 @@ eureka:
   client:
     service-url:
       defaultZone: http://eureka-server:9100/eureka/
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  ssl:
+    bundle:
+      pem:
+        opensearch:
+          truststore:
+            certificate: ${OPENSEARCH_CERT_PATH}
+  ai:
+    vectorstore:
+      opensearch:
+        ssl-bundle: opensearch
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://ip-10-0-0-183.ap-northeast-2.compute.internal/eureka/
