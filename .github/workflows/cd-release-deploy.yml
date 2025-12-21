@@ -36,7 +36,7 @@ env:
   APP_PORT: 9005
 
   # ✅ AWS settings
-  AWS_REGION_APP_PROD: ap-northeast-2
+  AWS_REGION_PROD: ap-northeast-2
 
   # ✅ SSM target tags (Env=prod, Node=api-bundle-1/2)
   PROD_ENV_TAG_KEY: "tag:Env"
