@@ -21,7 +21,7 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: write # for OIDC (aws-actions/configure-aws-credentials)
+  id-token: write
 
 concurrency:
   group: deploy-prod-${{ github.ref }}
@@ -31,14 +31,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
-  # App settings
+  # App
   APP_NAME: search-service
   APP_PORT: 9005
 
-  # AWS settings
+  # AWS
   AWS_REGION_PROD: ap-northeast-2
 
-  # SSM target tags (Env=prod, Node=api-bundle-1/2)
+  # SSM target tags
   PROD_ENV_TAG_KEY: "tag:Env"
   PROD_ENV_TAG_VALUE: "prod"
 
@@ -149,37 +149,29 @@ jobs:
         shell: bash
         env:
           VERSION: ${{ needs.prepare-image.outputs.version }}
-          GHCR_USER: ${{ secrets.GHCR_USER }}   # must be GitHub username
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}     # PAT with read:packages
+          GHCR_USER: ${{ secrets.GHCR_USER }} # GitHub username
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}   # PAT read:packages
           APP_NAME: ${{ env.APP_NAME }}
         run: |
           set -euo pipefail
-          set -x
 
-          read -r -d '' SCRIPT <<'EOS'
+          SCRIPT=$(cat <<'EOS'
           set -euo pipefail
-          echo "Deploy start: $(date -Iseconds)"
-
           cd /srv/todaybook/${APP_NAME}
-
           echo "$GHCR_PAT" | sudo docker login ghcr.io -u "$GHCR_USER" --password-stdin
           chmod +x deploy.sh
           ./deploy.sh
-
-          echo "Deploy done: $(date -Iseconds)"
           EOS
-
+          )
           export SCRIPT
 
-          # Build SSM parameters JSON without jq (more robust)
           PARAMS=$(python3 - <<'PY'
           import json, os
-          script = os.environ["SCRIPT"]
-          print(json.dumps({"commands": script.splitlines()}))
+          print(json.dumps({"commands": os.environ["SCRIPT"].splitlines()}))
           PY
           )
 
-          SEND_OUT=$(aws ssm send-command \
+          CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy ${APP_NAME}:${VERSION} to prod-1" \
             --targets \
@@ -187,56 +179,24 @@ jobs:
               "Key=${PROD1_NODE_TAG_KEY},Values=${PROD1_NODE_TAG_VALUE}" \
             --parameters "$PARAMS" \
             --cloud-watch-output-config CloudWatchOutputEnabled=true \
-            --output json)
-
-          echo "send-command raw output (first 2000 chars):"
-          echo "$SEND_OUT" | head -c 2000 || true
-          echo
-
-          CMD_ID=$(python3 - <<'PY'
-          import json, os
-          out = json.loads(os.environ["SEND_OUT"])
-          print(out["Command"]["CommandId"])
-          PY
-          )
+            --query "Command.CommandId" \
+            --output text)
 
           echo "SSM CommandId=$CMD_ID"
 
-          COUNT=$(aws ssm list-command-invocations --command-id "$CMD_ID" \
-            --query "length(CommandInvocations)" --output text)
-
-          echo "Target count: $COUNT"
-          if [[ "$COUNT" == "0" ]]; then
-            echo "❌ No instances matched. Check tags (Env=prod, Node=api-bundle-1) and SSM Managed instances."
-            aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
-            exit 1
-          fi
-          if [[ "$COUNT" != "1" ]]; then
-            echo "❌ Expected exactly 1 target, got $COUNT"
-            aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
-            exit 1
-          fi
-
           while true; do
-            STATUS=$(aws ssm list-command-invocations \
-              --command-id "$CMD_ID" --details \
+            STATUS=$(aws ssm list-command-invocations --command-id "$CMD_ID" --details \
               --query "CommandInvocations[0].Status" --output text 2>/dev/null || true)
 
-            if [[ -z "$STATUS" || "$STATUS" == "None" || "$STATUS" == "null" ]]; then
-              echo "SSM status: (waiting for invocation...)"
-              sleep 3
-              continue
-            fi
+            [[ -z "$STATUS" || "$STATUS" == "None" || "$STATUS" == "null" ]] && sleep 3 && continue
 
             echo "SSM status: $STATUS"
             case "$STATUS" in
               Success) break ;;
               Failed|Cancelled|TimedOut)
-                echo "❌ SSM failed with status=$STATUS"
                 aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
                 exit 1
                 ;;
-              Pending|InProgress|Delayed) sleep 5 ;;
               *) sleep 5 ;;
             esac
           done
@@ -262,31 +222,24 @@ jobs:
           APP_NAME: ${{ env.APP_NAME }}
         run: |
           set -euo pipefail
-          set -x
 
-          read -r -d '' SCRIPT <<'EOS'
+          SCRIPT=$(cat <<'EOS'
           set -euo pipefail
-          echo "Deploy start: $(date -Iseconds)"
-
           cd /srv/todaybook/${APP_NAME}
-
           echo "$GHCR_PAT" | sudo docker login ghcr.io -u "$GHCR_USER" --password-stdin
           chmod +x deploy.sh
           ./deploy.sh
-
-          echo "Deploy done: $(date -Iseconds)"
           EOS
-
+          )
           export SCRIPT
 
           PARAMS=$(python3 - <<'PY'
           import json, os
-          script = os.environ["SCRIPT"]
-          print(json.dumps({"commands": script.splitlines()}))
+          print(json.dumps({"commands": os.environ["SCRIPT"].splitlines()}))
           PY
           )
 
-          SEND_OUT=$(aws ssm send-command \
+          CMD_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy ${APP_NAME}:${VERSION} to prod-2" \
             --targets \
@@ -294,56 +247,24 @@ jobs:
               "Key=${PROD2_NODE_TAG_KEY},Values=${PROD2_NODE_TAG_VALUE}" \
             --parameters "$PARAMS" \
             --cloud-watch-output-config CloudWatchOutputEnabled=true \
-            --output json)
-
-          echo "send-command raw output (first 2000 chars):"
-          echo "$SEND_OUT" | head -c 2000 || true
-          echo
-
-          CMD_ID=$(python3 - <<'PY'
-          import json, os
-          out = json.loads(os.environ["SEND_OUT"])
-          print(out["Command"]["CommandId"])
-          PY
-          )
+            --query "Command.CommandId" \
+            --output text)
 
           echo "SSM CommandId=$CMD_ID"
 
-          COUNT=$(aws ssm list-command-invocations --command-id "$CMD_ID" \
-            --query "length(CommandInvocations)" --output text)
-
-          echo "Target count: $COUNT"
-          if [[ "$COUNT" == "0" ]]; then
-            echo "❌ No instances matched. Check tags (Env=prod, Node=api-bundle-2) and SSM Managed instances."
-            aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
-            exit 1
-          fi
-          if [[ "$COUNT" != "1" ]]; then
-            echo "❌ Expected exactly 1 target, got $COUNT"
-            aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
-            exit 1
-          fi
-
           while true; do
-            STATUS=$(aws ssm list-command-invocations \
-              --command-id "$CMD_ID" --details \
+            STATUS=$(aws ssm list-command-invocations --command-id "$CMD_ID" --details \
               --query "CommandInvocations[0].Status" --output text 2>/dev/null || true)
 
-            if [[ -z "$STATUS" || "$STATUS" == "None" || "$STATUS" == "null" ]]; then
-              echo "SSM status: (waiting for invocation...)"
-              sleep 3
-              continue
-            fi
+            [[ -z "$STATUS" || "$STATUS" == "None" || "$STATUS" == "null" ]] && sleep 3 && continue
 
             echo "SSM status: $STATUS"
             case "$STATUS" in
               Success) break ;;
               Failed|Cancelled|TimedOut)
-                echo "❌ SSM failed with status=$STATUS"
                 aws ssm list-command-invocations --command-id "$CMD_ID" --details || true
                 exit 1
                 ;;
-              Pending|InProgress|Delayed) sleep 5 ;;
               *) sleep 5 ;;
             esac
           done
