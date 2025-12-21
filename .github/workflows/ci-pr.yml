@@ -38,6 +38,10 @@ jobs:
 
       - name: Build & Test
         run: ./gradlew clean test build --no-daemon
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # 테스트 리포트 자동 생성
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
