@@ -155,7 +155,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          read -r -d '' SCRIPT <<'EOS'
+          read -r -d '' SCRIPT <<EOS
           set -euo pipefail
           echo "Deploy start: $(date -Iseconds)"
 
@@ -165,7 +165,7 @@ jobs:
           chmod +x deploy.sh
           ./deploy.sh
 
-          echo "Deploy done: $(date -Iseconds)"
+          echo "Deploy done: \$(date -Iseconds)"
           EOS
 
           CMD_ID=$(aws ssm send-command \
@@ -221,7 +221,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          read -r -d '' SCRIPT <<'EOS'
+          read -r -d '' SCRIPT <<EOS
           set -euo pipefail
           echo "Deploy start: $(date -Iseconds)"
 
@@ -231,7 +231,7 @@ jobs:
           chmod +x deploy.sh
           ./deploy.sh
 
-          echo "Deploy done: $(date -Iseconds)"
+          echo "Deploy done: \$(date -Iseconds)"
           EOS
 
           CMD_ID=$(aws ssm send-command \
