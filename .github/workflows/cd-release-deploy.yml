@@ -1,0 +1,291 @@
+name: CD (release) - Deploy to Prod
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Deploy version tag (e.g. 1.2.3)"
+        required: true
+      sha:
+        description: "Commit SHA to deploy (optional if version tag exists)"
+        required: false
+      update_latest:
+        description: "Also move :latest to this version? (after both servers succeed)"
+        required: false
+        type: choice
+        options: ["true", "false"]
+        default: "true"
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # ✅ for OIDC (aws-actions/configure-aws-credentials)
+
+concurrency:
+  group: deploy-prod-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+  # ✅ App settings
+  APP_NAME: search-service
+  APP_PORT: 9005
+
+  # ✅ AWS settings
+  AWS_REGION_APP_PROD: ap-northeast-2
+
+  # ✅ SSM target tags (Env=prod, Node=api-bundle-1/2)
+  PROD_ENV_TAG_KEY: "tag:Env"
+  PROD_ENV_TAG_VALUE: "prod"
+
+  PROD1_NODE_TAG_KEY: "tag:Node"
+  PROD1_NODE_TAG_VALUE: "api-bundle-1"
+
+  PROD2_NODE_TAG_KEY: "tag:Node"
+  PROD2_NODE_TAG_VALUE: "api-bundle-2"
+
+jobs:
+  # 1) 이미지 준비 (VERSION/SHA 확정 및 태그 승격)
+  prepare-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.out.outputs.version }}
+      update_latest: ${{ steps.out.outputs.update_latest }}
+    steps:
+      - name: Resolve VERSION
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          else
+            echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Resolve UPDATE_LATEST
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "UPDATE_LATEST=true" >> "$GITHUB_ENV"
+          else
+            val="${{ inputs.update_latest }}"
+            [[ -z "$val" ]] && val="true"
+            echo "UPDATE_LATEST=$val" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.VERSION }}
+          fetch-depth: 1
+
+      - name: Resolve SHA (optional)
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          else
+            if [[ -n "${{ inputs.sha }}" ]]; then
+              echo "SHA=${{ inputs.sha }}" >> "$GITHUB_ENV"
+            else
+              echo "ℹ️ No SHA provided. Checking existing tags."
+            fi
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure version image exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET_VERSION="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
+
+          if docker buildx imagetools inspect "$TARGET_VERSION" > /dev/null 2>&1; then
+            echo "✅ $TARGET_VERSION already exists."
+            exit 0
+          fi
+
+          if [[ -z "${SHA:-}" ]]; then
+            echo "❌ Version image not found and SHA not provided for promotion."
+            exit 1
+          fi
+
+          ORIGIN="${REGISTRY}/${IMAGE_NAME}:main-${SHA}"
+          docker buildx imagetools inspect "$ORIGIN" > /dev/null
+          docker buildx imagetools create "$ORIGIN" --tag "$TARGET_VERSION"
+          echo "✅ Promoted $ORIGIN -> $TARGET_VERSION"
+
+      - name: Export outputs
+        id: out
+        run: |
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "update_latest=${UPDATE_LATEST}" >> "$GITHUB_OUTPUT"
+
+  # 2) PROD-1 배포 (SSM Run Command)
+  deploy-prod-1:
+    needs: prepare-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION_PROD }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_PROD_ROLE_ARN }}
+          role-session-name: github-actions-ssm-deploy
+
+      - name: Deploy to prod-1 via SSM (Env=prod, Node=api-bundle-1)
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare-image.outputs.version }}
+          GHCR_USER: ${{ secrets.GHCR_USER }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          APP_NAME: ${{ env.APP_NAME }}
+        run: |
+          set -euo pipefail
+
+          read -r -d '' SCRIPT <<'EOS'
+          set -euo pipefail
+          echo "Deploy start: $(date -Iseconds)"
+
+          cd /srv/todaybook/${APP_NAME}
+
+          echo "$GHCR_PAT" | sudo docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          chmod +x deploy.sh
+          ./deploy.sh
+
+          echo "Deploy done: $(date -Iseconds)"
+          EOS
+
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ${APP_NAME}:${VERSION} to prod-1" \
+            --targets \
+              "Key=${PROD_ENV_TAG_KEY},Values=${PROD_ENV_TAG_VALUE}" \
+              "Key=${PROD1_NODE_TAG_KEY},Values=${PROD1_NODE_TAG_VALUE}" \
+            --parameters commands="$(jq -Rc '.|split("\n")' <<< "$SCRIPT")" \
+            --cloud-watch-output-config CloudWatchOutputEnabled=true \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM CommandId=$CMD_ID"
+
+          while true; do
+            STATUS=$(aws ssm list-command-invocations \
+              --command-id "$CMD_ID" --details \
+              --query "CommandInvocations[0].Status" --output text)
+
+            echo "SSM status: $STATUS"
+            case "$STATUS" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut)
+                echo "❌ SSM failed with status=$STATUS"
+                aws ssm list-command-invocations --command-id "$CMD_ID" --details
+                exit 1
+                ;;
+              Pending|InProgress|Delayed) sleep 5 ;;
+              *) sleep 5 ;;
+            esac
+          done
+
+  # 3) PROD-2 배포 (1번 성공 시 진행)
+  deploy-prod-2:
+    needs: [prepare-image, deploy-prod-1]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION_PROD }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_PROD_ROLE_ARN }}
+          role-session-name: github-actions-ssm-deploy
+
+      - name: Deploy to prod-2 via SSM (Env=prod, Node=api-bundle-2)
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare-image.outputs.version }}
+          GHCR_USER: ${{ secrets.GHCR_USER }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          APP_NAME: ${{ env.APP_NAME }}
+        run: |
+          set -euo pipefail
+
+          read -r -d '' SCRIPT <<'EOS'
+          set -euo pipefail
+          echo "Deploy start: $(date -Iseconds)"
+
+          cd /srv/todaybook/${APP_NAME}
+
+          echo "$GHCR_PAT" | sudo docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          chmod +x deploy.sh
+          ./deploy.sh
+
+          echo "Deploy done: $(date -Iseconds)"
+          EOS
+
+          CMD_ID=$(aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ${APP_NAME}:${VERSION} to prod-2" \
+            --targets \
+              "Key=${PROD_ENV_TAG_KEY},Values=${PROD_ENV_TAG_VALUE}" \
+              "Key=${PROD2_NODE_TAG_KEY},Values=${PROD2_NODE_TAG_VALUE}" \
+            --parameters commands="$(jq -Rc '.|split("\n")' <<< "$SCRIPT")" \
+            --cloud-watch-output-config CloudWatchOutputEnabled=true \
+            --query "Command.CommandId" \
+            --output text)
+
+          echo "SSM CommandId=$CMD_ID"
+
+          while true; do
+            STATUS=$(aws ssm list-command-invocations \
+              --command-id "$CMD_ID" --details \
+              --query "CommandInvocations[0].Status" --output text)
+
+            echo "SSM status: $STATUS"
+            case "$STATUS" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut)
+                echo "❌ SSM failed with status=$STATUS"
+                aws ssm list-command-invocations --command-id "$CMD_ID" --details
+                exit 1
+                ;;
+              Pending|InProgress|Delayed) sleep 5 ;;
+              *) sleep 5 ;;
+            esac
+          done
+
+  # 4) 최종 :latest 태그 갱신
+  update-latest:
+    needs: [prepare-image, deploy-prod-1, deploy-prod-2]
+    if: ${{ needs.prepare-image.outputs.update_latest == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Move latest tag
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.prepare-image.outputs.version }}"
+          TARGET_VERSION="${REGISTRY}/${IMAGE_NAME}:${VERSION}"
+          TARGET_LATEST="${REGISTRY}/${IMAGE_NAME}:latest"
+          docker buildx imagetools create "$TARGET_VERSION" --tag "$TARGET_LATEST"
+          echo "✅ Moved latest -> ${TARGET_VERSION}"
