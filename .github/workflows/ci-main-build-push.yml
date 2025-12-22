@@ -1,16 +1,16 @@
-name: CI (dev) - Build & Push Image
+name: CI (main) - Build & Push Image
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
+  packages: write  # GHCR push에 필요
 
 concurrency:
-  group: dev-image-${{ github.ref }}
+  group: main-image-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -21,6 +21,7 @@ jobs:
   build_push:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +33,7 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - name: Build
+      - name: Build (skip tests optional)
         run: ./gradlew clean build --no-daemon
         env:
           GITHUB_ACTOR: ${{ github.actor }}
@@ -48,15 +49,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 태그: dev-<sha>, dev-latest
+      # 태그: main-<sha>, main-latest
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=dev-${{ github.sha }}
-            type=raw,value=dev-latest
+            type=raw,value=main-${{ github.sha }}
+            type=raw,value=main-latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
