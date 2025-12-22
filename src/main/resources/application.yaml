@@ -78,16 +78,6 @@ spring:
     activate:
       on-profile: local
     import: optional:file:.env[.properties]
-  ssl:
-    bundle:
-      pem:
-        opensearch:
-          truststore:
-            certificate: ${OPENSEARCH_CERT_PATH}
-  ai:
-    vectorstore:
-      opensearch:
-        ssl-bundle: opensearch
 eureka:
   instance:
     hostname: localhost
@@ -100,16 +90,6 @@ spring:
   config:
     activate:
       on-profile: dev
-  ssl:
-    bundle:
-      pem:
-        opensearch:
-          truststore:
-            certificate: ${OPENSEARCH_CERT_PATH}
-  ai:
-    vectorstore:
-      opensearch:
-        ssl-bundle: opensearch
 eureka:
   instance:
     hostname: search-service
@@ -123,16 +103,6 @@ spring:
   config:
     activate:
       on-profile: prod
-  ssl:
-    bundle:
-      pem:
-        opensearch:
-          truststore:
-            certificate: ${OPENSEARCH_CERT_PATH}
-  ai:
-    vectorstore:
-      opensearch:
-        ssl-bundle: opensearch
 eureka:
   instance:
     prefer-ip-address: true
