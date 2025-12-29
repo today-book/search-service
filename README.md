@@ -146,7 +146,7 @@
 ### Reranking
 
 - **Custom Scoring Logic**  
-  벡터 유사도 점수와 감정 점수를 결합한 재랭킹 전략
+  벡터 유사도 점수와 감정 점수를 결합한 리랭킹 전략
 
 ### Data / Metadata
 
@@ -163,7 +163,9 @@
 
 ## 7. API Example
 
-본 섹션은 Emotion-Aware Semantic Search API의 요청/응답 예시를 제공한다.
+본 섹션은 Emotion-Aware Semantic Search API의 요청/응답 예시를 제공한다.  
+아래 예시는 현재 배포된 API 엔드포인트를 기준으로 하며,  
+테스트 목적의 실제 호출이 가능합니다.
 
 ### Search Request
 

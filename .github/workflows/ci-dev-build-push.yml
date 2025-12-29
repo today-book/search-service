@@ -3,6 +3,10 @@ name: CI (dev) - Build & Push Image
 on:
   push:
     branches: [ "dev" ]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
