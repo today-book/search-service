@@ -48,9 +48,9 @@ public class GeminiEmbeddingConfig {
 
   private void applyPredictTimeouts(PredictionServiceSettings.Builder pss) {
     RetrySettings retry = pss.predictSettings().getRetrySettings().toBuilder()
-        .setTotalTimeout(Duration.ofSeconds(timeoutProperties.totalTimeoutSecond()))
         .setInitialRpcTimeout(Duration.ofSeconds(timeoutProperties.initialRpcTimeoutSecond()))
         .setMaxRpcTimeout(Duration.ofSeconds(timeoutProperties.maxRpcTimeoutSecond()))
+        .setTotalTimeout(Duration.ofSeconds(timeoutProperties.totalTimeoutSecond()))
         .build();
 
     pss.predictSettings().setRetrySettings(retry);

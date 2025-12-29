@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "embedding.predict")
 public record EmbeddingPredictTimeoutProperties(
-    int totalTimeoutSecond,
     int initialRpcTimeoutSecond,
-    int maxRpcTimeoutSecond
-) {
+    int maxRpcTimeoutSecond,
+    int totalTimeoutSecond
+    ) {
 }

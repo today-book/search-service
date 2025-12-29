@@ -52,9 +52,9 @@ custom:
 
 embedding:
   predict:
-    total-timeout-second: 5
-    initial-rpc-timeout-second: 5
-    max-rpc-timeout-second: 5
+    initial-rpc-timeout-second: 10
+    max-rpc-timeout-second: 20
+    total-timeout-second: 30
 
 search:
   vector-top-k: 30
