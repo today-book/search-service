@@ -7,6 +7,12 @@ spring:
   cloud:
     discovery:
       enabled: true
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 3000
   ai:
     vertex.ai:
       gemini:
@@ -46,9 +52,9 @@ custom:
 
 embedding:
   predict:
-    total-timeout: 5s
-    initial-rpc-timeout: 5s
-    max-rpc-timeout: 5s
+    total-timeout-second: 5
+    initial-rpc-timeout-second: 5
+    max-rpc-timeout-second: 5
 
 search:
   vector-top-k: 30

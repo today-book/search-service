@@ -10,6 +10,7 @@ import org.springframework.ai.vertexai.embedding.text.VertexAiTextEmbeddingOptio
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.threeten.bp.Duration;
 
 @RequiredArgsConstructor
 @Configuration
@@ -47,9 +48,9 @@ public class GeminiEmbeddingConfig {
 
   private void applyPredictTimeouts(PredictionServiceSettings.Builder pss) {
     RetrySettings retry = pss.predictSettings().getRetrySettings().toBuilder()
-        .setTotalTimeout(timeoutProperties.totalTimeout())
-        .setInitialRpcTimeout(timeoutProperties.initialRpcTimeout())
-        .setMaxRpcTimeout(timeoutProperties.maxRpcTimeout())
+        .setTotalTimeout(Duration.ofSeconds(timeoutProperties.totalTimeoutSecond()))
+        .setInitialRpcTimeout(Duration.ofSeconds(timeoutProperties.initialRpcTimeoutSecond()))
+        .setMaxRpcTimeout(Duration.ofSeconds(timeoutProperties.maxRpcTimeoutSecond()))
         .build();
 
     pss.predictSettings().setRetrySettings(retry);
