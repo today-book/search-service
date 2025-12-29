@@ -50,12 +50,6 @@ custom:
       temperature: 0.3
       max-tokens: 300
 
-embedding:
-  predict:
-    initial-rpc-timeout-second: 10
-    max-rpc-timeout-second: 20
-    total-timeout-second: 30
-
 search:
   vector-top-k: 30
   rerank-top-n: 10
