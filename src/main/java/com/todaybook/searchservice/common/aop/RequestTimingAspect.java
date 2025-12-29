@@ -40,14 +40,22 @@ public class RequestTimingAspect {
   private void anyController() {
   }
 
-  /**
-   * 시간 측정 대상 - Service / Repository - infrastructure 하위의 Component (외부 API, 벡터 검색 등)
-   */
-  @Pointcut(
-      "within(@org.springframework.stereotype.Service *) || " +
-          "within(@org.springframework.stereotype.Repository *) || " +
-          "within(com.todaybook.searchservice.infrastructure..*)"
-  )
+ /**
+ * 시간 측정 대상
+ * - Service / Repository
+ * - infrastructure 하위 Component
+ *   (단, Properties / Configuration 계열은 제외)
+ */
+@Pointcut(
+    "within(@org.springframework.stereotype.Service *) || " +
+    "within(@org.springframework.stereotype.Repository *) || " +
+    "(" +
+    "  within(com.todaybook.searchservice.infrastructure..*) && " +
+    "  !within(*..*Properties) && " + // 클래스명 *Properties 제외
+    "  !@within(org.springframework.boot.context.properties.ConfigurationProperties) && " +
+    "  !within(@org.springframework.context.annotation.Configuration *)" +
+    ")"
+)
   private void timedTargets() {
   }
 
