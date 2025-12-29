@@ -44,6 +44,12 @@ custom:
       temperature: 0.3
       max-tokens: 300
 
+embedding:
+  predict:
+    total-timeout: 5s
+    initial-rpc-timeout: 5s
+    max-rpc-timeout: 5s
+
 search:
   vector-top-k: 30
   rerank-top-n: 10
