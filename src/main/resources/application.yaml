@@ -30,7 +30,7 @@ spring:
         use-approximate-knn: true
         dimensions: 768
         read-timeout: 5000
-        connect-timeout: 60000
+        connect-timeout: 8000
   jackson:
     deserialization:
       fail-on-unknown-properties: false
