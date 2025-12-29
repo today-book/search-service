@@ -22,13 +22,13 @@ public class GeminiEmbeddingConfig {
 
   @Bean
   public VertexAiEmbeddingConnectionDetails connectionDetails() throws IOException {
-    PredictionServiceSettings.Builder pss = PredictionServiceSettings.newBuilder();
-    applyPredictTimeouts(pss);
+//    PredictionServiceSettings.Builder pss = PredictionServiceSettings.newBuilder();
+//    applyPredictTimeouts(pss);
 
     return VertexAiEmbeddingConnectionDetails.builder()
         .projectId(embeddingProperties.getProjectId())
         .location(embeddingProperties.getLocation())
-        .predictionServiceSettings(pss.build())
+//        .predictionServiceSettings(pss.build())
         .build();
   }
 
