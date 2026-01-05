@@ -30,38 +30,29 @@ public class RequestTimingAspect {
   // 요청(스레드) 단위로 타이밍 정보를 보관
   private static final ThreadLocal<TimingContext> CTX = new ThreadLocal<>();
 
+  /** 컨트롤러 진입점 - HTTP 요청의 시작과 끝을 감싸기 위한 포인트컷 */
+  @Pointcut(
+      "within(@org.springframework.web.bind.annotation.RestController *) || "
+          + "within(@org.springframework.stereotype.Controller *)")
+  private void anyController() {}
+
   /**
-   * 컨트롤러 진입점 - HTTP 요청의 시작과 끝을 감싸기 위한 포인트컷
+   * 시간 측정 대상 - Service / Repository - infrastructure 하위 Component (단, Properties / Configuration
+   * 계열은 제외)
    */
   @Pointcut(
-      "within(@org.springframework.web.bind.annotation.RestController *) || " +
-          "within(@org.springframework.stereotype.Controller *)"
-  )
-  private void anyController() {
-  }
+      "within(@org.springframework.stereotype.Service *) || "
+          + "within(@org.springframework.stereotype.Repository *) || "
+          + "("
+          + "  within(com.todaybook.searchservice.infrastructure..*) && "
+          + "  !within(*..*Properties) && "
+          + // 클래스명 *Properties 제외
+          "  !@within(org.springframework.boot.context.properties.ConfigurationProperties) && "
+          + "  !within(@org.springframework.context.annotation.Configuration *)"
+          + ")")
+  private void timedTargets() {}
 
- /**
- * 시간 측정 대상
- * - Service / Repository
- * - infrastructure 하위 Component
- *   (단, Properties / Configuration 계열은 제외)
- */
-@Pointcut(
-    "within(@org.springframework.stereotype.Service *) || " +
-    "within(@org.springframework.stereotype.Repository *) || " +
-    "(" +
-    "  within(com.todaybook.searchservice.infrastructure..*) && " +
-    "  !within(*..*Properties) && " + // 클래스명 *Properties 제외
-    "  !@within(org.springframework.boot.context.properties.ConfigurationProperties) && " +
-    "  !within(@org.springframework.context.annotation.Configuration *)" +
-    ")"
-)
-  private void timedTargets() {
-  }
-
-  /**
-   * Controller 기준 AOP - 요청 시작 시 TimingContext 생성 - 요청 종료 시 전체 호출 시간 요약 로그 출력
-   */
+  /** Controller 기준 AOP - 요청 시작 시 TimingContext 생성 - 요청 종료 시 전체 호출 시간 요약 로그 출력 */
   @Around("anyController()")
   public Object aroundController(ProceedingJoinPoint pjp) throws Throwable {
     long startNs = System.nanoTime();
@@ -74,9 +65,8 @@ public class RequestTimingAspect {
     }
 
     HttpServletRequest request = currentRequest();
-    String uri = (request != null)
-        ? request.getMethod() + " " + request.getRequestURI()
-        : "(no-request)";
+    String uri =
+        (request != null) ? request.getMethod() + " " + request.getRequestURI() : "(no-request)";
 
     try {
       return pjp.proceed();
@@ -103,14 +93,10 @@ public class RequestTimingAspect {
 
         // 서비스/인프라 호출 시간 요약 출력
         for (TimingContext.Entry e : entries) {
-          sb.append(String.format(
-              "  - %-100s count=%3d total=%6dms max=%6dms avg=%6dms%n",
-              e.signature,
-              e.count,
-              e.totalMs(),
-              e.maxMs,
-              e.avgMs()
-          ));
+          sb.append(
+              String.format(
+                  "  - %-100s count=%3d total=%6dms max=%6dms avg=%6dms%n",
+                  e.signature, e.count, e.totalMs(), e.maxMs, e.avgMs()));
         }
 
         log.info(sb.toString());
@@ -118,9 +104,7 @@ public class RequestTimingAspect {
     }
   }
 
-  /**
-   * Service / Repository / infrastructure Component 호출 시간 측정
-   */
+  /** Service / Repository / infrastructure Component 호출 시간 측정 */
   @Around("timedTargets()")
   public Object aroundTimedTargets(ProceedingJoinPoint pjp) throws Throwable {
     TimingContext ctx = CTX.get();
@@ -138,19 +122,19 @@ public class RequestTimingAspect {
       ctx.callCount++;
 
       String signature = pjp.getSignature().toShortString();
-      ctx.entries.compute(signature, (k, v) -> {
-        if (v == null) {
-          v = new TimingContext.Entry(signature);
-        }
-        v.add(elapsedNs);
-        return v;
-      });
+      ctx.entries.compute(
+          signature,
+          (k, v) -> {
+            if (v == null) {
+              v = new TimingContext.Entry(signature);
+            }
+            v.add(elapsedNs);
+            return v;
+          });
     }
   }
 
-  /**
-   * 현재 HTTP 요청 조회
-   */
+  /** 현재 HTTP 요청 조회 */
   private HttpServletRequest currentRequest() {
     RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
     if (attrs instanceof ServletRequestAttributes sra) {
@@ -159,9 +143,7 @@ public class RequestTimingAspect {
     return null;
   }
 
-  /**
-   * 요청 단위 타이밍 정보 저장용 컨텍스트
-   */
+  /** 요청 단위 타이밍 정보 저장용 컨텍스트 */
   static class TimingContext {
 
     // 메서드 시그니처별 누적 시간
