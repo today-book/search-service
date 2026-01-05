@@ -1,5 +1,7 @@
 package com.todaybook.searchservice.application.rerank.calculator;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,12 +11,14 @@ import org.springframework.stereotype.Component;
  * @since 1.0.0
  */
 @Component
+@EnableConfigurationProperties(RerankWeightProperties.class)
+@RequiredArgsConstructor
 public class FinalScoreCalculator {
 
-  private static final double WEIGHT_VECTOR = 0.70;
-  private static final double WEIGHT_EMOTION = 0.30;
+  private final RerankWeightProperties rerankWeightProperties;
 
   public double calculate(double vectorScore, double emotionScore) {
-    return (vectorScore * WEIGHT_VECTOR) + (emotionScore * WEIGHT_EMOTION);
+    return (vectorScore * rerankWeightProperties.vector())
+        + (emotionScore * rerankWeightProperties.emotion());
   }
 }
